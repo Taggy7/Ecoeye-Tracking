@@ -133,6 +133,42 @@ def find_working_op(base_date):
     return None, None
 
 
+
+
+def fetch_global_indicators(data):
+    """
+    글로벌 지표 자동 수집 (best-effort, 실패해도 무방)
+    - EU ETS: oilpriceapi.com 무료 티어 (OILPRICE_KEY 환경변수 필요)
+    - 나머지(VCM/CORSIA/중국 등): 무료 안정 API 부재 → 수동 갱신 유지
+    """
+    oilprice_key = os.environ.get("OILPRICE_KEY", "").strip()
+    today = datetime.date.today().strftime("%y.%m")
+
+    # EU ETS via oilpriceapi (무료 키)
+    if oilprice_key:
+        try:
+            url = "https://api.oilpriceapi.com/v1/prices/latest?by_code=EU_CARBON"
+            req = urllib.request.Request(url, headers={
+                "Authorization": f"Token {oilprice_key}",
+                "Content-Type": "application/json",
+            })
+            with urllib.request.urlopen(req, timeout=20, context=SSL_CTX) as resp:
+                j = json.loads(resp.read().decode("utf-8"))
+            price = j.get("data", {}).get("price")
+            if price:
+                data["series"].setdefault("EU_ETS", {})
+                data["series"]["EU_ETS"][today] = round(float(price), 2)
+                log(f"✅ EU_ETS 자동 수집: €{price} ({today})")
+        except Exception as e:
+            log(f"  EU_ETS 자동 수집 실패 (수동 갱신 유지): {str(e)[:50]}")
+    else:
+        log("  ℹ️ OILPRICE_KEY 미설정 — EU_ETS는 수동 갱신 (선택사항)")
+
+    # 나머지 글로벌 지표는 무료 안정 소스 부재로 수동 유지
+    log("  ℹ️ VCM·CORSIA·중국·캘리포니아·영국·RGGI는 수동 갱신 (유료 API만 존재)")
+    return data
+
+
 def parse_items(items):
     """API 응답에서 종목명:종가 추출"""
     result = {}
@@ -216,6 +252,9 @@ def main():
         log("   가능한 원인: (1) 모든 오퍼레이션 후보가 404 → 이름 재확인 필요")
         log("              (2) SERVICE_KEY 미승인 (data.go.kr 마이페이지에서 확인)")
         log("              (3) 연휴/휴장 구간")
+
+    # 글로벌 지표 수집 (best-effort)
+    data = fetch_global_indicators(data)
 
     data["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S KST")
     save_data(data)
