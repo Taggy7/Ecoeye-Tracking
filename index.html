@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>탄소배출권 가격 추적 대시보드</title>
+<style>
+  :root{
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3350;
+    --text:#e2e8f0; --muted:#8892a4; --accent:#4ade80; --accent2:#60a5fa;
+    --green:#4ade80; --red:#f87171;
+    --sans:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;padding:0 0 60px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+  header{padding:24px 0 16px;border-bottom:1px solid var(--border);margin-bottom:20px}
+  h1{font-size:20px;font-weight:700;color:#fff;letter-spacing:-.3px}
+  h1 span{color:var(--accent)}
+  .sub{font-size:12px;color:var(--muted);margin-top:4px}
+  .status{font-size:11px;margin-top:6px;display:flex;align-items:center;gap:6px}
+  .dot-live{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  .card .name{font-size:11.5px;color:var(--muted);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .val{font-size:20px;font-weight:700;color:#fff;line-height:1.15}
+  .card .sub{font-size:10.5px;color:var(--muted);margin-top:3px}
+  .up{color:var(--green)} .down{color:var(--red)}
+  .auto-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(74,222,128,.15);color:var(--accent);margin-left:4px;vertical-align:middle}
+
+  .section{margin-bottom:28px}
+  .section-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  .section-title{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .section-title .bar{width:6px;height:18px;background:var(--accent);border-radius:2px}
+  .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);margin-left:6px}
+
+  .toggles{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .toggle{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:6px}
+  .toggle.active{color:var(--text)}
+  .toggle .swatch{width:10px;height:10px;border-radius:50%}
+
+  .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;height:380px}
+  .btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12.5px;padding:7px 14px;cursor:pointer}
+  .btn:hover{border-color:var(--accent2)}
+  select.btn{cursor:pointer}
+
+  .table-box{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:640px}
+  th{background:var(--surface2);text-align:right;padding:9px 12px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+  th:first-child{text-align:left}
+  td{padding:8px 12px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums}
+  td:first-child{text-align:left;font-weight:500}
+  tr:last-child td{border-bottom:none}
+  .cat-kr{color:#60a5fa} .cat-intl{color:#a78bfa} .cat-vcm{color:#4ade80}
+
+  .insight{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.7}
+  .insight b{color:var(--text)}
+  .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:14px}
+  .link-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px}
+  .link-card a{color:var(--accent2);text-decoration:none;font-weight:500}
+  .link-card .desc{color:var(--muted);font-size:11px;margin-top:3px}
+  footer{text-align:center;font-size:11px;color:var(--muted);margin-top:36px;padding-top:18px;border-top:1px solid var(--border);line-height:1.8}
+  a{color:var(--accent2)}
+  @media(max-width:600px){.chart-box{height:320px;padding:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>탄소배출권 가격 추적 <span>대시보드</span></h1>
+    <div class="sub">국내(KAU·KCU·KOC) + 주요국(EU·영국·중국·캘리포니아·RGGI) + 글로벌(VCM·CORSIA)</div>
+    <div class="status"><span class="dot-live"></span><span id="updateInfo">데이터 로딩 중…</span></div>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title"><span class="bar"></span>가격 추이 <span class="badge" id="rangeBadge">3년치</span></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="ecoFilter" style="cursor:pointer"> 에코아이 연관만
+        </label>
+        <select id="unitMode" class="btn">
+          <option value="krw">원화 환산 (₩/톤)</option>
+          <option value="orig">원통화 (각국 단위)</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;display:flex;gap:16px;flex-wrap:wrap">
+      <span><span style="display:inline-block;width:20px;height:3px;background:var(--muted);vertical-align:middle;margin-right:4px"></span>굵은 실선 = 글로벌 핵심(VCM·CORSIA)</span>
+      <span><span style="display:inline-block;width:20px;height:2px;background:var(--muted);vertical-align:middle;margin-right:4px"></span>실선 = 에코아이 연관</span>
+      <span><span style="display:inline-block;width:20px;height:0;border-top:2px dashed var(--muted);vertical-align:middle;margin-right:4px"></span>점선 = 기타</span>
+    </div>
+    <div class="toggles" id="toggles"></div>
+    <div class="chart-box"><canvas id="chart"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-title"><span class="bar"></span>최신 시세 상세</div></div>
+    <div class="table-box"><table id="detailTable"></table></div>
+  </div>
+
+  <div class="insight" id="insight">
+    <b>핵심 인사이트.</b> KAU는 2023년 9월 14,600원에서 2024년 8천원대 박스권으로 침체했다가, 4기 할당계획(유상할당 확대·총량 -17%)으로 2026년 5월 24,550원까지 급등했다. 그럼에도 EU ETS(€81≈11.4만원)의 약 1/5 수준이라 추격 여지가 크다. <b style="color:#fbbf24">★ 표시</b>는 에코아이 직접 연관 지표(KAU·KCU·KOC·EU·VCM·CORSIA)이며, <b style="color:#2dd4bf">굵은 실선 VCM·CORSIA</b>가 에코아이 해외 매출의 핵심 단가다.
+  </div>
+
+  <div class="section" style="margin-top:28px">
+    <div class="section-head"><div class="section-title"><span class="bar"></span>1차 사료 모니터링 링크</div></div>
+    <div class="links">
+      <div class="link-card"><a href="https://ets.krx.co.kr/contents/ETS/03/03010000/ETS03010000.jsp" target="_blank">KRX ETS 시세·경매 ↗</a><div class="desc">KAU/KCU/KOC 실시간. 매월 둘째주 수요일 경매</div></div>
+      <div class="link-card"><a href="https://registry.verra.org/app/search/VCS?programType=ISSUANCE&exactResId=4531" target="_blank">Verra 우즈벡 (ID 4531) ↗</a><div class="desc">CORSIA 전환·발행·은퇴(VCU) 실시간</div></div>
+      <div class="link-card"><a href="https://registry.verra.org/app/search/VCS?programType=ISSUANCE&exactResId=2737" target="_blank">Verra 방글라데시 (ID 2737) ↗</a><div class="desc">쿡스토브 PoA. PACM(ID 10431) 병행 등록</div></div>
+      <div class="link-card"><a href="https://dart.fss.or.kr/dsab001/main.do?autoSearch=Y&textCrpNm=%EC%97%90%EC%BD%94%EC%95%84%EC%9D%B4" target="_blank">DART 에코아이 공시 ↗</a><div class="desc">단일판매계약·분기보고서</div></div>
+      <div class="link-card"><a href="https://tradingeconomics.com/commodity/carbon" target="_blank">EU ETS (Trading Economics) ↗</a><div class="desc">EUA 실시간 시세</div></div>
+      <div class="link-card"><a href="https://www.rggi.org/auctions/auction-results/prices-volumes" target="_blank">RGGI 경매결과 ↗</a><div class="desc">미국 동북부 분기 경매</div></div>
+    </div>
+  </div>
+
+  <footer>
+    <span id="autoNote">KAU·KCU·KOC는 매일 자동 갱신 (공공데이터포털 API)</span><br>
+    글로벌 지표(EU·VCM·CORSIA 등)는 수동 보완 · 투자판단 참고용, 매매 추천 아님
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const CUR_SYM = { KRW:'₩', EUR:'€', USD:'$', GBP:'£', CNY:'¥' };
+const CAT_LABEL = { kr:'국내', intl:'주요국', vcm:'글로벌' };
+let DATA = null, chart = null, hidden = {};
+
+// ── 데이터 로드 (prices.json) ──
+async function loadData(){
+  try{
+    const res = await fetch('data/prices.json?t=' + Date.now());  // 캐시 무효화
+    DATA = await res.json();
+    document.getElementById('updateInfo').textContent =
+      '최종 갱신: ' + (DATA.updated || '알 수 없음');
+    renderAll();
+  }catch(e){
+    document.getElementById('updateInfo').textContent = '데이터 로드 실패 — prices.json 확인 필요';
+    console.error(e);
+  }
+}
+
+function fxRate(cur){ return (DATA.fx && DATA.fx[cur]) || 1; }
+function toKRW(val, cur){
+  if(val===null||val===undefined) return null;
+  return cur==='KRW' ? val : val * fxRate(cur);
+}
+
+// 시점 라벨 통합 정렬
+function allDates(){
+  const set = new Set();
+  Object.values(DATA.series).forEach(s=>Object.keys(s).forEach(d=>set.add(d)));
+  return [...set].sort((a,b)=>parseDate(a)-parseDate(b));
+}
+function parseDate(s){
+  const p = s.split('.').map(x=>parseInt(x));
+  let y=p[0]; if(y<100) y+=2000;
+  return new Date(y,(p[1]||1)-1,p[2]||1).getTime();
+}
+
+function seriesKeys(){ return Object.keys(DATA.meta); }
+
+function renderCards(){
+  const el = document.getElementById('cards'); el.innerHTML='';
+  seriesKeys().forEach(k=>{
+    const m = DATA.meta[k], s = DATA.series[k]||{};
+    const dates = Object.keys(s).sort((a,b)=>parseDate(a)-parseDate(b));
+    if(dates.length===0){
+      el.insertAdjacentHTML('beforeend',
+        `<div class="card"><div class="name">${m.label}</div><div class="val" style="color:var(--muted);font-size:15px">–</div><div class="sub">데이터 없음</div></div>`);
+      return;
+    }
+    const latest = s[dates[dates.length-1]];
+    const prev = dates.length>1 ? s[dates[dates.length-2]] : null;
+    const pct = prev ? ((latest-prev)/prev*100) : null;
+    const sym = CUR_SYM[m.cur];
+    const disp = m.cur==='KRW' ? Math.round(latest).toLocaleString() : sym+latest.toLocaleString(undefined,{maximumFractionDigits:1});
+    const krw = m.cur==='KRW' ? '원/톤' : '≈'+Math.round(toKRW(latest,m.cur)).toLocaleString()+'원';
+    let pctHtml = pct!==null ? ` · <span class="${pct>=0?'up':'down'}">${pct>=0?'+':''}${pct.toFixed(1)}%</span>` : '';
+    const star = m.eco ? '<span style="color:#fbbf24;font-size:11px">★</span> ' : '';
+    const auto = m.auto ? '<span class="auto-badge">자동</span>' : '';
+    const cardStyle = m.emph ? 'border-color:#2dd4bf;' : (m.eco ? 'border-color:#3a4568;' : '');
+    el.insertAdjacentHTML('beforeend',
+      `<div class="card" style="${cardStyle}"><div class="name">${star}${m.label}${auto}</div><div class="val">${disp}</div><div class="sub">${krw}${pctHtml}</div></div>`);
+  });
+}
+
+function renderToggles(){
+  const el = document.getElementById('toggles'); el.innerHTML='';
+  seriesKeys().forEach(k=>{
+    const m = DATA.meta[k], active = !hidden[k];
+    const star = m.eco ? '<span style="color:#fbbf24;margin-right:2px">★</span>' : '';
+    const weight = m.emph ? 'font-weight:700;' : (m.eco ? 'font-weight:600;' : '');
+    el.insertAdjacentHTML('beforeend',
+      `<div class="toggle ${active?'active':''}" style="${active?'border-color:'+m.color:''};${weight}" onclick="toggleSeries('${k}')">
+        <span class="swatch" style="background:${active?m.color:'var(--muted)'}"></span>${star}${m.label}</div>`);
+  });
+}
+function toggleSeries(k){ hidden[k]=!hidden[k]; renderToggles(); renderChart(); }
+
+function renderChart(){
+  const mode = document.getElementById('unitMode').value;
+  const ecoOnly = document.getElementById('ecoFilter').checked;
+  const dates = allDates();
+  const datasets = seriesKeys().filter(k=>{
+    if(hidden[k]) return false;
+    if(ecoOnly && !DATA.meta[k].eco) return false;
+    return true;
+  }).map(k=>{
+    const m = DATA.meta[k], s = DATA.series[k]||{};
+    const orig = dates.map(d=> d in s ? s[d] : null);
+    const data = mode==='krw' ? orig.map(v=>toKRW(v,m.cur)) : orig.slice();
+    const bw = m.emph ? 4 : (m.eco ? 2.8 : 1.6);
+    const pr = m.emph ? 4 : (m.eco ? 3 : 2.5);
+    return {
+      label:m.label, data, borderColor:m.color, backgroundColor:m.color,
+      borderWidth:bw, pointRadius:pr, pointHoverRadius:pr+2, spanGaps:true, tension:0.25,
+      borderDash: (m.emph||m.eco) ? [] : [5,4],
+      _cur:m.cur, _orig:orig
+    };
+  });
+
+  const fmt = new Intl.NumberFormat('ko-KR');
+  const cfg = {
+    type:'line', data:{ labels:dates, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          backgroundColor:'#22263a', borderColor:'#2e3350', borderWidth:1,
+          titleColor:'#e2e8f0', bodyColor:'#e2e8f0', padding:10,
+          callbacks:{ label:c=>{
+            if(c.parsed.y===null) return null;
+            const ds=c.dataset, orig=ds._orig[c.dataIndex];
+            if(mode==='krw'){
+              let str=ds.label+': '+fmt.format(Math.round(c.parsed.y))+'원';
+              if(ds._cur!=='KRW') str+=' ('+CUR_SYM[ds._cur]+orig+')';
+              return str;
+            }
+            return ds.label+': '+CUR_SYM[ds._cur]+orig;
+          }}
+        }
+      },
+      scales:{
+        y:{ title:{display:true,text:mode==='krw'?'원/톤 (환산)':'각국 통화',color:'#8892a4',font:{size:11}},
+            ticks:{color:'#8892a4',font:{size:11},callback:v=>mode==='krw'?fmt.format(v):v},
+            grid:{color:'rgba(136,146,164,0.12)'} },
+        x:{ ticks:{color:'#8892a4',font:{size:11}}, grid:{display:false} }
+      }
+    }
+  };
+  if(chart){ chart.data=cfg.data; chart.options=cfg.options; chart.update(); }
+  else chart = new Chart(document.getElementById('chart'), cfg);
+}
+
+function renderTable(){
+  const tbl = document.getElementById('detailTable');
+  tbl.innerHTML='<thead><tr><th>지표</th><th>최신 종가</th><th>원화 환산</th><th>전기대비</th><th>기간대비</th><th style="text-align:left">분류</th></tr></thead><tbody></tbody>';
+  const tb = tbl.querySelector('tbody');
+  seriesKeys().forEach(k=>{
+    const m = DATA.meta[k], s = DATA.series[k]||{};
+    const dates = Object.keys(s).sort((a,b)=>parseDate(a)-parseDate(b));
+    if(dates.length===0) return;
+    const latest = s[dates[dates.length-1]];
+    const prev = dates.length>1 ? s[dates[dates.length-2]] : null;
+    const first = s[dates[0]];
+    const pctPrev = prev ? ((latest-prev)/prev*100) : null;
+    const pctYtd = (first&&first!==latest) ? ((latest-first)/first*100) : null;
+    const sym = CUR_SYM[m.cur];
+    const disp = m.cur==='KRW' ? Math.round(latest).toLocaleString()+'원' : sym+latest.toLocaleString(undefined,{maximumFractionDigits:1});
+    const krw = Math.round(toKRW(latest,m.cur)).toLocaleString()+'원';
+    const fp = p=> p===null?'–':`<span class="${p>=0?'up':'down'}">${p>=0?'+':''}${p.toFixed(1)}%</span>`;
+    const cc = m.cat==='kr'?'cat-kr':m.cat==='intl'?'cat-intl':'cat-vcm';
+    const star = m.eco?'<span style="color:#fbbf24">★</span> ':'';
+    tb.insertAdjacentHTML('beforeend',
+      `<tr><td>${star}<span class="${cc}">${m.label}</span></td><td>${disp}</td><td style="color:var(--muted)">${krw}</td><td>${fp(pctPrev)}</td><td>${fp(pctYtd)}</td><td style="text-align:left;color:var(--muted);font-size:11px">${CAT_LABEL[m.cat]}</td></tr>`);
+  });
+}
+
+function renderAll(){ renderCards(); renderToggles(); renderChart(); renderTable(); }
+
+document.getElementById('unitMode').addEventListener('change', renderChart);
+document.getElementById('ecoFilter').addEventListener('change', renderChart);
+
+loadData();
+</script>
+</body>
+</html>
