@@ -26,21 +26,18 @@ SERVICE_URL = "https://apis.data.go.kr/1160100/service/GetGeneralProductInfoServ
 # 배출권 오퍼레이션명 후보 (명명규칙: getOilPriceInfo/getGoldPriceInfo 형태)
 # 첫 성공 시 그 이름을 사용. 확정되면 이 리스트 맨 앞에 고정하면 됨
 OP_CANDIDATES = [
-    "getEmtPermsPriceInfo",
-    "getEmtPriceInfo",
-    "getCarbEmtPriceInfo",
-    "getGhgEmtPriceInfo",
-    "getEmissionPriceInfo",
-    "getEmtnPermsPriceInfo",
-    "getEmtPermPriceInfo",
-    "getCarbonPriceInfo",
+    "getCertifiedEmissionReductionPriceInfo",  # ✅ 확정 (공공데이터포털 상세기능에서 확인)
 ]
 
 # 추적 종목 매핑 (API itmsNm → 대시보드 시리즈 키)
+# 종목 매핑: API가 주는 itmsNm에서 이 키워드를 부분일치로 찾음
+# 실제 종목명이 "KAU25", "배출권-KAU25" 등 어떤 형태든 부분일치로 잡음
 TARGET_ITEMS = {
-    "KAU25": ["KAU25", "KAU26"],
-    "KCU25": ["KCU25", "KCU26"],
-    "KOC":   ["KOC", "i-KOC"],
+    "KAU25": ["KAU25", "KAU 25", "KAU2 5"],   # 할당배출권 (현재 연도물 우선)
+    "KAU26": ["KAU26", "KAU 26"],
+    "KCU25": ["KCU25", "KCU 25"],              # 상쇄배출권
+    "KCU26": ["KCU26"],
+    "KOC":   ["KOC", "i-KOC", "iKOC"],         # 외부사업
 }
 
 SSL_CTX = ssl.create_default_context()
