@@ -203,10 +203,14 @@ function renderToggles(){
 }
 function toggleSeries(k){ hidden[k]=!hidden[k]; renderToggles(); renderChart(); }
 
+const RIGHT_AXIS_KEYS = ['EU_ETS','UK_ETS','CA_ETS','RGGI'];
+
 function renderChart(){
   const mode = document.getElementById('unitMode').value;
   const ecoOnly = document.getElementById('ecoFilter').checked;
   const dates = allDates();
+  const dualAxis = mode==='krw';
+  let usesRight = false;
   const datasets = seriesKeys().filter(k=>{
     if(hidden[k]) return false;
     if(ecoOnly && !DATA.meta[k].eco) return false;
@@ -217,15 +221,32 @@ function renderChart(){
     const data = mode==='krw' ? orig.map(v=>toKRW(v,m.cur)) : orig.slice();
     const bw = m.emph ? 4 : (m.eco ? 2.8 : 1.6);
     const pr = m.emph ? 4 : (m.eco ? 3 : 2.5);
+    const onRight = dualAxis && RIGHT_AXIS_KEYS.includes(k);
+    if(onRight) usesRight = true;
     return {
       label:m.label, data, borderColor:m.color, backgroundColor:m.color,
       borderWidth:bw, pointRadius:pr, pointHoverRadius:pr+2, spanGaps:true, tension:0.25,
       borderDash: (m.emph||m.eco) ? [] : [5,4],
+      yAxisID: onRight ? 'y1' : 'y',
       _cur:m.cur, _orig:orig
     };
   });
 
   const fmt = new Intl.NumberFormat('ko-KR');
+  const scales = {
+    y:{ position:'left',
+        title:{display:true,text:mode==='krw'?(usesRight?'원/톤 — 국내·저가 지표':'원/톤 (환산)'):'각국 통화',color:'#8892a4',font:{size:11}},
+        ticks:{color:'#8892a4',font:{size:11},callback:v=>mode==='krw'?fmt.format(v):v},
+        grid:{color:'rgba(136,146,164,0.12)'} },
+    x:{ ticks:{color:'#8892a4',font:{size:11}}, grid:{display:false} }
+  };
+  if(usesRight){
+    scales.y1 = { position:'right',
+        title:{display:true,text:'원/톤 — EU·영국·캘리포니아·RGGI',color:'#a78bfa',font:{size:11}},
+        ticks:{color:'#a78bfa',font:{size:11},callback:v=>fmt.format(v)},
+        grid:{display:false} };
+  }
+
   const cfg = {
     type:'line', data:{ labels:dates, datasets },
     options:{
@@ -248,16 +269,11 @@ function renderChart(){
           }}
         }
       },
-      scales:{
-        y:{ title:{display:true,text:mode==='krw'?'원/톤 (환산)':'각국 통화',color:'#8892a4',font:{size:11}},
-            ticks:{color:'#8892a4',font:{size:11},callback:v=>mode==='krw'?fmt.format(v):v},
-            grid:{color:'rgba(136,146,164,0.12)'} },
-        x:{ ticks:{color:'#8892a4',font:{size:11}}, grid:{display:false} }
-      }
+      scales
     }
   };
-  if(chart){ chart.data=cfg.data; chart.options=cfg.options; chart.update(); }
-  else chart = new Chart(document.getElementById('chart'), cfg);
+  if(chart){ chart.destroy(); }
+  chart = new Chart(document.getElementById('chart'), cfg);
 }
 
 function renderTable(){
