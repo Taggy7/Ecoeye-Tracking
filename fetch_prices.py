@@ -53,17 +53,31 @@ def load_data():
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, encoding="utf-8") as f:
-                return json.load(f)
+                d = json.load(f)
+            # series 키가 없으면 초기화 (meta/fx는 있으면 보존)
+            if "series" not in d:
+                d["series"] = {}
+            return d
         except Exception as e:
-            log(f"기존 데이터 로드 실패, 새로 시작: {e}")
-    return {"updated": None, "series": {}}
+            log(f"⚠️ 기존 데이터 로드 실패: {e}")
+            log("   ⛔ 덮어쓰기를 막기 위해 빈 파일로 시작하지 않습니다.")
+            log("   → data/prices.json 을 완전판으로 복구한 뒤 다시 실행하세요.")
+            # 로드 실패 시 None 반환 → main에서 중단 처리
+            return None
+    log("⚠️ data/prices.json 이 없습니다. 완전판을 먼저 올려주세요.")
+    return None
 
 
 def save_data(data):
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    log(f"저장 완료: {DATA_FILE}")
+    # 무결성 경고: meta/fx가 없으면 대시보드가 렌더링 실패함
+    if "meta" not in data or not data.get("meta"):
+        log("⚠️ 경고: meta(색상·축 정보)가 없습니다. 대시보드 차트가 안 뜰 수 있습니다.")
+    if "fx" not in data or not data.get("fx"):
+        log("⚠️ 경고: fx(환율)가 없습니다. 원화 환산이 안 될 수 있습니다.")
+    log(f"저장 완료: {DATA_FILE} (series {len(data.get('series',{}))}종, meta {len(data.get('meta',{}))}종)")
 
 
 def try_call(op_name, base_date):
@@ -117,7 +131,7 @@ def find_working_op(base_date):
     """맞는 오퍼레이션명을 자동 탐색. 저장된 것 우선 시도"""
     # 이전에 찾은 이름이 있으면 우선
     data = load_data()
-    saved_op = data.get("_op_name")
+    saved_op = data.get("_op_name") if data else None
     order = OP_CANDIDATES[:]
     if saved_op and saved_op in order:
         order.remove(saved_op)
@@ -218,11 +232,18 @@ def main():
         log("⚠️ SERVICE_KEY 미설정 — GitHub Secrets에 SERVICE_KEY를 등록하세요")
         log("   기존 데이터를 유지하고 종료합니다")
         data = load_data()
+        if data is None:
+            log("⛔ 기존 데이터를 읽을 수 없어 중단합니다 (덮어쓰기 방지)")
+            sys.exit(1)
         data["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S KST") + " (키없음)"
         save_data(data)
         return
 
     data = load_data()
+    if data is None:
+        log("⛔ 기존 데이터를 읽을 수 없어 중단합니다 (덮어쓰기 방지)")
+        log("   data/prices.json 완전판(meta·fx·과거시계열 포함)을 올린 뒤 재실행하세요")
+        sys.exit(1)
     got_any = False
 
     for base_date in recent_business_dates():
