@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-04 02:54:52 KST",
+  "updated": "2026-07-04 09:10:22 KST",
   "note": "KAU/KCU/KOC는 GitHub Actions 매일 자동 갱신. RGGI는 전분기 공식 경매낙찰가(rggi.org), 캘리포니아는 CARB 공식 경매정산가로 100% 확정. 중국·EU·영국은 공식 종가(MEE/Montel/ICE) 실측 시점을 앵커로 하고 분기말 대표값 보완. VCM·CORSIA는 거래소 실측종가 부재로 시장 세그먼트 대표값. 출처: RGGI Inc, CARB, MEE, ICE, TradingEconomics, Montel, Homaio, IETA",
   "fx": {
     "EUR": 1771,
