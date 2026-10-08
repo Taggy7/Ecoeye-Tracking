@@ -178,9 +178,117 @@ def fetch_global_indicators(data):
     else:
         log("  ℹ️ OILPRICE_KEY 미설정 — EU_ETS는 수동 갱신 (선택사항)")
 
+    # CORSIA: ICE 지연시세 (키 불필요)
+    fetch_corsia_ice(data)
+
     # 나머지 글로벌 지표는 무료 안정 소스 부재로 수동 유지
-    log("  ℹ️ VCM·CORSIA·중국·캘리포니아·영국·RGGI는 수동 갱신 (유료 API만 존재)")
+    log("  ℹ️ VCM·중국·캘리포니아·영국·RGGI는 수동 갱신 (유료 API만 존재)")
     return data
+
+
+# CORSIA: ICE 'CORSIA Eligible Emissions Units (2024-2026) Futures' 일일 시세 (USD/t, 무료 지연시세)
+# - 키 불필요. 실패해도 기존 값 유지 (best-effort)
+# - ICE 공개 웹페이지가 쓰는 JSON 경로를 사용. 경로가 바뀌면 로그에 실패 원인이 남는다
+ICE_CORSIA_PRODUCT_ID = "83046673"
+ICE_CORSIA_PAGE = ("https://www.ice.com/products/83046673/"
+                   "CORSIA-Eligible-Emissions-Units-2024-2026-Futures/data")
+CORSIA_SANE_RANGE = (1.0, 200.0)   # USD/t. 이 범위 밖이면 오수집으로 보고 버림
+
+
+def _get(url, as_json=True):
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (carbon-tracker)",
+        "Accept": "application/json, text/html;q=0.9",
+        "Referer": ICE_CORSIA_PAGE,
+    })
+    with urllib.request.urlopen(req, timeout=30, context=SSL_CTX) as resp:
+        raw = resp.read().decode("utf-8", "replace")
+    return json.loads(raw) if as_json else raw
+
+
+def _pick_contract(contracts):
+    """가격이 있는 계약 중 가장 가까운 만기물(근월물) 선택"""
+    priced = []
+    for c in contracts:
+        price = c.get("lastPrice")
+        if price in (None, "", 0):
+            price = c.get("settlementPrice") or c.get("settlement")
+        try:
+            price = float(str(price).replace(",", ""))
+        except (TypeError, ValueError):
+            continue
+        priced.append((c, price))
+    return priced[0] if priced else (None, None)
+
+
+def fetch_corsia_ice(data):
+    """ICE CORSIA 선물 근월물 가격을 series['CORSIA'][yy.mm.dd]에 기록. 성공 시 True"""
+    try:
+        page = _get(ICE_CORSIA_PAGE, as_json=False)
+        import re
+        hubs = re.findall(r'hubId["\'=:\s]+(\d+)', page)
+        if not hubs:
+            log("  CORSIA(ICE): 상품 페이지에서 hubId를 찾지 못함 — 수동 값 유지")
+            return False
+        hub = hubs[0]
+        contracts = None
+        for url in (
+            f"https://www.ice.com/marketdata/api/productguide/charting/contract-data"
+            f"?productId={ICE_CORSIA_PRODUCT_ID}&hubId={hub}",
+            f"https://www.ice.com/marketdata/DelayedMarkets.shtml?getContractsAsJson="
+            f"&productId={ICE_CORSIA_PRODUCT_ID}&hubId={hub}",
+        ):
+            try:
+                j = _get(url)
+            except Exception as e:
+                log(f"    CORSIA(ICE) 경로 실패: {str(e)[:60]}")
+                continue
+            if isinstance(j, list) and j:
+                contracts = j
+                break
+        if not contracts:
+            log("  CORSIA(ICE): 계약 목록이 비어 있음 — 수동 값 유지")
+            return False
+
+        c, price = _pick_contract(contracts)
+        if c is None:
+            log("  CORSIA(ICE): 가격이 있는 계약 없음 — 수동 값 유지")
+            return False
+        lo, hi = CORSIA_SANE_RANGE
+        if not lo <= price <= hi:
+            log(f"  CORSIA(ICE): 비정상 가격 {price} — 버림")
+            return False
+
+        # 가격 시각(lastTime) 기준 날짜, 없으면 전일(다른 국내 종목과 같은 '전일 종가' 기준)
+        when = None
+        for key in ("lastTime", "lastUpdateTime", "endDate"):
+            s = str(c.get(key) or "")
+            for fmt in ("%m/%d/%Y %I:%M %p", "%m/%d/%Y", "%a %b %d %H:%M:%S %Z %Y"):
+                try:
+                    when = datetime.datetime.strptime(s.strip(), fmt).date()
+                    break
+                except ValueError:
+                    pass
+            if when and key != "endDate":
+                break
+            when = None
+        if when is None:
+            when = datetime.date.today() - datetime.timedelta(days=1)
+        label = when.strftime("%y.%m.%d")
+
+        data["series"].setdefault("CORSIA", {})[label] = round(price, 2)
+        meta = data.setdefault("meta", {}).setdefault("CORSIA", {})
+        meta["auto"] = True
+        data.setdefault("sources", {})["CORSIA"] = {
+            "src": "ICE CORSIA Eligible Emissions Units (2024-2026) Futures, 근월물 지연시세",
+            "contract": c.get("marketStrip") or c.get("marketId"),
+            "since": data.get("sources", {}).get("CORSIA", {}).get("since", label),
+        }
+        log(f"✅ CORSIA 자동 수집: ${price} ({label}, {c.get('marketStrip', '')})")
+        return True
+    except Exception as e:
+        log(f"  CORSIA(ICE) 자동 수집 실패 (수동 값 유지): {str(e)[:80]}")
+        return False
 
 
 def parse_items(items):

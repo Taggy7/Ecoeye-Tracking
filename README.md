@@ -18,8 +18,10 @@ data/prices.json 자동 갱신·커밋
 GitHub Pages 대시보드가 자동 반영 → URL로 접속
 ```
 
-자동 갱신: **KAU·KCU·KOC** (국내 배출권)
-수동 보완: EU·영국·중국·캘리포니아·RGGI·VCM·CORSIA (무료 API 없음)
+자동 갱신: **KAU·KCU·KOC** (국내 배출권), **CORSIA** (ICE CORSIA 적격배출권 선물 근월물 지연시세, 키 불필요)
+수동 보완: EU·영국·중국·캘리포니아·RGGI·VCM (무료 API 없음)
+
+> CORSIA 자동 수집이 실패하면(ICE 페이지 구조 변경 등) 기존 값을 유지하고, 7일 넘게 갱신이 없으면 요약 보고서에 알림이 뜹니다. Actions 로그의 `CORSIA(ICE)` 줄에서 원인을 확인하세요
 
 ---
 

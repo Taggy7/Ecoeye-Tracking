@@ -83,10 +83,17 @@ def meta_for(key, meta):
     return {}
 
 
-def analyze(key, meta, series, fx, today):
+def analyze(key, meta, series, fx, today, source=None):
     pts = points(series)
     if not pts:
         return None
+    # 수집 원천이 바뀐 지표(예: CORSIA 수동 대표값 → ICE 선물)는 바뀐 날 이후만 비교한다
+    since = (source or {}).get("since")
+    if since:
+        cut = parse_label(since)
+        newer = [p for p in pts if p[0] >= cut]
+        if newer:
+            pts = newer
     last_d, last_v = pts[-1]
     cur = meta.get("cur", "KRW")
     rate = 1.0 if cur == "KRW" else fx.get(cur)
@@ -103,6 +110,8 @@ def analyze(key, meta, series, fx, today):
         "age_days": (today - last_d).days,
         "n_points": len(pts),
         "changes": {},
+        "source": (source or {}).get("src"),
+        "source_since": parse_label(since).isoformat() if since else None,
         "alerts": [],
     }
 
@@ -167,15 +176,18 @@ def derived(res):
 
     def add(name, a, b, note):
         if a and b and a["last_krw"] and b["last_krw"]:
+            manual = [x["key"] for x in (a, b) if not x["auto"]]
+            if manual:
+                note += f" — {'·'.join(manual)} 수동 대표값"
             d.append({"name": name, "value": a["last_krw"] / b["last_krw"],
                       "basis": f"{a['key']} {a['last_date']} / {b['key']} {b['last_date']}", "note": note})
 
     add("KOC / KAU26", koc, kau26, "외부사업 상쇄배출권의 할당배출권 대비 가격 수준(1.0 초과 시 KOC가 더 비쌈)")
     add("KCU / KAU26", kcu, kau26, "상쇄배출권의 할당배출권 대비 할인율 판단용")
     add("KAU26 / KAU25", kau26, kau25, "연도물 간 가격차")
-    add("KAU26 / EUA", kau26, eua, "국내 가격의 EU 대비 수준(EUA는 분기 대표값 가능, 수동지표)")
-    add("CORSIA / KAU26", corsia, kau26, "국제 항공 상쇄 가격 대비(수동지표)")
-    add("VCM / KAU26", vcm, kau26, "자발적 시장 대비(수동지표)")
+    add("KAU26 / EUA", kau26, eua, "국내 가격의 EU 대비 수준")
+    add("CORSIA / KAU26", corsia, kau26, "국제 항공 상쇄(CORSIA) 가격의 국내 할당 대비 수준")
+    add("VCM / KAU26", vcm, kau26, "자발적 시장 대비")
     return d
 
 
@@ -194,9 +206,13 @@ def render_md(updated, today, items, drv, fx):
     L.append(f"# 탄소배출권 트래킹 요약 (에코아이 분석용) — {today.isoformat()}")
     L.append("")
     L.append(f"- 원천: `data/prices.json` (수집 갱신 시각 {updated})")
-    L.append("- KAU·KCU·KOC: 공공데이터포털(금융위 일반상품시세) 전일 종가 자동 수집. "
-             "EU·영국·중국·미국·VCM·CORSIA: 수동 갱신 분기 대표값(일간 변동 해석 금지).")
+    L.append("- 자동 수집(일간): " + "·".join(i["key"] for i in items if i["auto"])
+             + " / 수동 갱신(분기 대표값, 일간 변동 해석 금지): " + "·".join(i["key"] for i in items if not i["auto"]))
     L.append(f"- 환율(원): " + ", ".join(f"{k} {v:,}" for k, v in fx.items()))
+    for i in items:
+        if i.get("source"):
+            L.append(f"- {i['key']} 자동수집 원천: {i['source']} — {i['source_since']} 이후 값만 변동률·고저 계산에 사용"
+                     "(이전 수동 대표값과 직접 비교 불가)")
     L.append("- 아래 수치는 모두 prices.json 값에서 계산한 변화율·환산이며 별도 추정치는 없음.")
     L.append("")
 
@@ -262,7 +278,8 @@ def main():
 
     res = {}
     for key, series in data.get("series", {}).items():
-        r = analyze(key, meta_for(key, meta), series, fx, today)
+        r = analyze(key, meta_for(key, meta), series, fx, today,
+                    data.get("sources", {}).get(key))
         if r:
             res[key] = r
     items = sorted(res.values(), key=lambda i: (not i["eco"], not i["emph"], i["key"]))
