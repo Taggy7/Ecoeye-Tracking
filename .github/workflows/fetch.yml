@@ -25,11 +25,14 @@ jobs:
           SERVICE_KEY: ${{ secrets.SERVICE_KEY }}
         run: python3 fetch_prices.py
 
+      - name: 에코아이 분석용 요약 생성
+        run: python3 build_report.py
+
       - name: 변경사항 커밋
         run: |
           git config user.name "carbon-tracker-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data/prices.json
+          git add data/prices.json data/report_digest.md data/report_digest.json
           if git diff --staged --quiet; then
             echo "변경사항 없음"
           else

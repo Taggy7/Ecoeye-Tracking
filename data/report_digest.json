@@ -1,0 +1,447 @@
+{
+  "as_of": "2026-10-08",
+  "source_updated": "2026-10-08 05:14:52 KST",
+  "fx": {
+    "EUR": 1771,
+    "USD": 1552,
+    "GBP": 2052,
+    "CNY": 229
+  },
+  "indicators": [
+    {
+      "key": "CORSIA",
+      "label": "CORSIA (적격 EEU)",
+      "cur": "USD",
+      "auto": false,
+      "eco": true,
+      "emph": true,
+      "last_date": "2026-06-30",
+      "last": 17.0,
+      "last_krw": 26384,
+      "age_days": 100,
+      "n_points": 13,
+      "changes": {
+        "직전관측": -0.05555555555555558,
+        "1주": null,
+        "1개월": null,
+        "3개월": -0.05555555555555558,
+        "6개월": -0.05555555555555558,
+        "1년": -0.15000000000000002
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-03-31",
+      "range_1y": {
+        "high": 20.0,
+        "low": 16.0,
+        "pos": 0.25,
+        "covers_full_year": true
+      },
+      "flat_run": 1
+    },
+    {
+      "key": "KOC",
+      "label": "KOC (외부사업·i-KOC)",
+      "cur": "KRW",
+      "auto": true,
+      "eco": true,
+      "emph": true,
+      "last_date": "2026-10-07",
+      "last": 28200.0,
+      "last_krw": 28200,
+      "age_days": 1,
+      "n_points": 59,
+      "changes": {
+        "직전관측": 0.0,
+        "1주": 0.20770877944325483,
+        "1개월": 0.45736434108527124,
+        "3개월": 1.3402489626556018,
+        "6개월": 1.6857142857142855,
+        "1년": null
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [
+        "1개월 +45.7% 변동",
+        "보유기간 내 신고가"
+      ],
+      "prev_date": "2026-10-06",
+      "range_1y": {
+        "high": 28200.0,
+        "low": 10500.0,
+        "pos": 1.0,
+        "covers_full_year": false
+      },
+      "flat_run": 3
+    },
+    {
+      "key": "EU_ETS",
+      "label": "EU ETS (EUA)",
+      "cur": "EUR",
+      "auto": false,
+      "eco": true,
+      "emph": false,
+      "last_date": "2026-07-31",
+      "last": 78.68,
+      "last_krw": 139342,
+      "age_days": 69,
+      "n_points": 14,
+      "changes": {
+        "직전관측": -0.03282114320835883,
+        "1주": null,
+        "1개월": null,
+        "3개월": 0.12400000000000011,
+        "6개월": -0.07162241887905596,
+        "1년": 0.049066666666666814
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-06-30",
+      "range_1y": {
+        "high": 84.75,
+        "low": 70.0,
+        "pos": 0.5884745762711869,
+        "covers_full_year": true
+      },
+      "flat_run": 1
+    },
+    {
+      "key": "KAU25",
+      "label": "KAU25 (국내 할당)",
+      "cur": "KRW",
+      "auto": true,
+      "eco": true,
+      "emph": false,
+      "last_date": "2026-09-01",
+      "last": 29450.0,
+      "last_krw": 29450,
+      "age_days": 37,
+      "n_points": 51,
+      "changes": {
+        "직전관측": 0.0,
+        "1주": 0.010291595197255532,
+        "1개월": 0.1348747591522157,
+        "3개월": 0.790273556231003,
+        "6개월": 1.974747474747475,
+        "1년": 2.4647058823529413
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [
+        "최신값이 37일 전(2026-09-01) — 자동수집 지표 갱신 지연",
+        "1개월 +13.5% 변동"
+      ],
+      "prev_date": "2026-08-31",
+      "range_1y": {
+        "high": 30100.0,
+        "low": 9900.0,
+        "pos": 0.9678217821782178,
+        "covers_full_year": true
+      },
+      "flat_run": 4
+    },
+    {
+      "key": "KAU26",
+      "label": "KAU26 (26년물)",
+      "cur": "KRW",
+      "auto": true,
+      "eco": true,
+      "emph": false,
+      "last_date": "2026-10-07",
+      "last": 29550.0,
+      "last_krw": 29550,
+      "age_days": 1,
+      "n_points": 58,
+      "changes": {
+        "직전관측": -0.003372681281618939,
+        "1주": -0.015000000000000013,
+        "1개월": -0.016638935108153063,
+        "3개월": 0.20612244897959187,
+        "6개월": null,
+        "1년": null
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-10-06",
+      "range_1y": {
+        "high": 30850.0,
+        "low": 24500.0,
+        "pos": 0.7952755905511811,
+        "covers_full_year": false
+      },
+      "flat_run": 1
+    },
+    {
+      "key": "KCU25",
+      "label": "KCU25 (국내 상쇄)",
+      "cur": "KRW",
+      "auto": true,
+      "eco": true,
+      "emph": false,
+      "last_date": "2026-09-01",
+      "last": 13500.0,
+      "last_krw": 13500,
+      "age_days": 37,
+      "n_points": 40,
+      "changes": {
+        "직전관측": 0.0,
+        "1주": 0.2053571428571428,
+        "1개월": 0.4516129032258065,
+        "3개월": 0.4835164835164836,
+        "6개월": null,
+        "1년": null
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [
+        "최신값이 37일 전(2026-09-01) — 자동수집 지표 갱신 지연",
+        "1개월 +45.2% 변동",
+        "보유기간 내 신고가"
+      ],
+      "prev_date": "2026-08-31",
+      "range_1y": {
+        "high": 13500.0,
+        "low": 9100.0,
+        "pos": 1.0,
+        "covers_full_year": false
+      },
+      "flat_run": 5
+    },
+    {
+      "key": "KCU26",
+      "label": "KCU26",
+      "cur": "KRW",
+      "auto": true,
+      "eco": true,
+      "emph": false,
+      "last_date": "2026-10-07",
+      "last": 13500.0,
+      "last_krw": 13500,
+      "age_days": 1,
+      "n_points": 58,
+      "changes": {
+        "직전관측": 0.0,
+        "1주": 0.0,
+        "1개월": 0.0,
+        "3개월": 0.4516129032258065,
+        "6개월": null,
+        "1년": null
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [
+        "같은 가격이 20회 연속 — 거래 부재 또는 API 미갱신 가능성(원천 확인 필요)",
+        "보유기간 내 신고가"
+      ],
+      "prev_date": "2026-10-06",
+      "range_1y": {
+        "high": 13500.0,
+        "low": 9300.0,
+        "pos": 1.0,
+        "covers_full_year": false
+      },
+      "flat_run": 20
+    },
+    {
+      "key": "VCM",
+      "label": "VCM (고품질 자발적)",
+      "cur": "USD",
+      "auto": false,
+      "eco": true,
+      "emph": false,
+      "last_date": "2026-06-30",
+      "last": 15.0,
+      "last_krw": 23280,
+      "age_days": 100,
+      "n_points": 13,
+      "changes": {
+        "직전관측": 0.013513513513513375,
+        "1주": null,
+        "1개월": null,
+        "3개월": 0.013513513513513375,
+        "6개월": 0.034482758620689724,
+        "1년": 0.0714285714285714
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-03-31",
+      "range_1y": {
+        "high": 15.0,
+        "low": 14.0,
+        "pos": 1.0,
+        "covers_full_year": true
+      },
+      "flat_run": 1
+    },
+    {
+      "key": "CA_ETS",
+      "label": "캘리포니아 CCA",
+      "cur": "USD",
+      "auto": false,
+      "eco": false,
+      "emph": false,
+      "last_date": "2026-06-30",
+      "last": 28.81,
+      "last_krw": 44713,
+      "age_days": 100,
+      "n_points": 13,
+      "changes": {
+        "직전관측": 0.031138153185397144,
+        "1주": null,
+        "1개월": null,
+        "3개월": 0.031138153185397144,
+        "6개월": 0.00173852573018074,
+        "1년": 0.11364514882102816
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-03-31",
+      "range_1y": {
+        "high": 28.81,
+        "low": 25.87,
+        "pos": 1.0,
+        "covers_full_year": true
+      },
+      "flat_run": 1
+    },
+    {
+      "key": "CN_CEA",
+      "label": "중국 CEA (전국)",
+      "cur": "CNY",
+      "auto": false,
+      "eco": false,
+      "emph": false,
+      "last_date": "2026-06-30",
+      "last": 82.3,
+      "last_krw": 18847,
+      "age_days": 100,
+      "n_points": 13,
+      "changes": {
+        "직전관측": 0.016049382716049276,
+        "1주": null,
+        "1개월": null,
+        "3개월": 0.016049382716049276,
+        "6개월": 0.016049382716049276,
+        "1년": -0.008433734939759074
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-03-31",
+      "range_1y": {
+        "high": 83.0,
+        "low": 80.0,
+        "pos": 0.7666666666666657,
+        "covers_full_year": true
+      },
+      "flat_run": 1
+    },
+    {
+      "key": "RGGI",
+      "label": "미국 RGGI",
+      "cur": "USD",
+      "auto": false,
+      "eco": false,
+      "emph": false,
+      "last_date": "2026-06-30",
+      "last": 35.0,
+      "last_krw": 54320,
+      "age_days": 100,
+      "n_points": 13,
+      "changes": {
+        "직전관측": 0.400560224089636,
+        "1주": null,
+        "1개월": null,
+        "3개월": 0.400560224089636,
+        "6개월": 0.5730337078651686,
+        "1년": 0.782985226693836
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-03-31",
+      "range_1y": {
+        "high": 35.0,
+        "low": 19.63,
+        "pos": 1.0,
+        "covers_full_year": true
+      },
+      "flat_run": 1
+    },
+    {
+      "key": "UK_ETS",
+      "label": "영국 UK ETS (UKA)",
+      "cur": "GBP",
+      "auto": false,
+      "eco": false,
+      "emph": false,
+      "last_date": "2026-07-31",
+      "last": 54.87,
+      "last_krw": 112593,
+      "age_days": 69,
+      "n_points": 14,
+      "changes": {
+        "직전관측": 0.14312499999999995,
+        "1주": null,
+        "1개월": null,
+        "3개월": 0.1928260869565217,
+        "6개월": 0.14312499999999995,
+        "1년": -0.0023636363636364566
+      },
+      "source": null,
+      "source_since": null,
+      "alerts": [],
+      "prev_date": "2026-06-30",
+      "range_1y": {
+        "high": 54.87,
+        "low": 46.0,
+        "pos": 1.0,
+        "covers_full_year": true
+      },
+      "flat_run": 1
+    }
+  ],
+  "derived": [
+    {
+      "name": "KOC / KAU26",
+      "value": 0.9543147208121827,
+      "basis": "KOC 2026-10-07 / KAU26 2026-10-07",
+      "note": "외부사업 상쇄배출권의 할당배출권 대비 가격 수준(1.0 초과 시 KOC가 더 비쌈)"
+    },
+    {
+      "name": "KCU / KAU26",
+      "value": 0.45685279187817257,
+      "basis": "KCU26 2026-10-07 / KAU26 2026-10-07",
+      "note": "상쇄배출권의 할당배출권 대비 할인율 판단용"
+    },
+    {
+      "name": "KAU26 / KAU25",
+      "value": 1.00339558573854,
+      "basis": "KAU26 2026-10-07 / KAU25 2026-09-01",
+      "note": "연도물 간 가격차"
+    },
+    {
+      "name": "KAU26 / EUA",
+      "value": 0.21206814887112285,
+      "basis": "KAU26 2026-10-07 / EU_ETS 2026-07-31",
+      "note": "국내 가격의 EU 대비 수준 — EU_ETS 수동 대표값"
+    },
+    {
+      "name": "CORSIA / KAU26",
+      "value": 0.8928595600676819,
+      "basis": "CORSIA 2026-06-30 / KAU26 2026-10-07",
+      "note": "국제 항공 상쇄(CORSIA) 가격의 국내 할당 대비 수준 — CORSIA 수동 대표값"
+    },
+    {
+      "name": "VCM / KAU26",
+      "value": 0.7878172588832487,
+      "basis": "VCM 2026-06-30 / KAU26 2026-10-07",
+      "note": "자발적 시장 대비 — VCM 수동 대표값"
+    }
+  ]
+}

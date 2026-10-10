@@ -18,8 +18,26 @@ data/prices.json 자동 갱신·커밋
 GitHub Pages 대시보드가 자동 반영 → URL로 접속
 ```
 
-자동 갱신: **KAU·KCU·KOC** (국내 배출권)
-수동 보완: EU·영국·중국·캘리포니아·RGGI·VCM·CORSIA (무료 API 없음)
+자동 갱신: **KAU·KCU·KOC** (국내 배출권), **CORSIA** (ICE CORSIA 적격배출권 선물 근월물 지연시세, 키 불필요)
+수동 보완: EU·영국·중국·캘리포니아·RGGI·VCM (무료 API 없음)
+
+> CORSIA 자동 수집이 실패하면(ICE 페이지 구조 변경 등) 기존 값을 유지하고, 7일 넘게 갱신이 없으면 요약 보고서에 알림이 뜹니다. Actions 로그의 `CORSIA(ICE)` 줄에서 원인을 확인하세요
+
+---
+
+## 에코아이 분석 보고서용 요약 (자동 생성)
+
+수집 직후 `build_report.py`가 `data/prices.json`을 요약해 두 파일을 같이 커밋합니다.
+
+| 파일 | 용도 |
+|---|---|
+| `data/report_digest.md` | 보고서·AI에 그대로 붙여넣는 요약 (알림, 지표별 1주~1년 변동, 원화환산, KOC/KAU 등 파생 비율) |
+| `data/report_digest.json` | 분석 스크립트·대시보드용 동일 내용 |
+
+보고서에서 불러오기 (항상 최신):
+`https://raw.githubusercontent.com/<아이디>/<저장소>/main/data/report_digest.md`
+
+수동 실행: `python3 build_report.py` — 알림 임계값(변동 ±10%, 갱신지연 일수 등)은 파일 상단 상수에서 조정합니다.
 
 ---
 
