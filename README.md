@@ -1,151 +1,42 @@
-# 탄소배출권 가격 추적 대시보드 — 설치 가이드
+# 탄소배출권 가격 추적 대시보드 (Ecoeye-Tracking)
 
-매일 자동으로 KAU·KCU·KOC 가격을 수집해 웹에서 보여주는 대시보드입니다. 한 번 설치하면 **사람이 아무것도 안 해도 매일 자동 갱신**되고, 인터넷 주소(URL)로 어디서든 접속할 수 있습니다.
+사이트: https://taggy7.github.io/Ecoeye-Tracking/
 
----
+## 무엇을 어떻게 모으나
 
-## 전체 그림
+| 지표 | 방식 | 원천 |
+|---|---|---|
+| KAU·KCU·KOC (새 연물·i-KOC·i-KCU 자동 추가) | **평일 하루 두 번 자동** (18:15 · 다음날 09:05 KST), 최근 15영업일 빈 날 자동 보충 | 공공데이터포털 일반상품시세정보 (KRX 배출권시장) |
+| 거래량 | 자동 — 0 이면 「거래 없음」(기준가가 이어진 값) | 같은 API |
+| 환율 USD·EUR·GBP·CNY | 자동 | ECB 기준환율 (Frankfurter, 키 불필요) |
+| EU ETS | 수동 (무료 키 `OILPRICE_KEY` 를 Secrets 에 넣으면 자동) | oilpriceapi.com |
+| CORSIA · VCM · 영국 · 중국 · 캘리포니아 · RGGI | **수동 입력** — 무료 공개 원천이 없음 | 입력할 때 출처를 함께 적음 |
 
-```
-매일 오전 9시
-   ↓
-GitHub Actions (무료 자동 실행)
-   ↓
-공공데이터포털 배출권 API 호출 → KAU/KCU/KOC 수집
-   ↓
-data/prices.json 자동 갱신·커밋
-   ↓
-GitHub Pages 대시보드가 자동 반영 → URL로 접속
-```
+## 수동 지표 넣는 법 (휴대폰 가능)
 
-자동 갱신: **KAU·KCU·KOC** (국내 배출권)
-수동 보완: EU·영국·중국·캘리포니아·RGGI·VCM·CORSIA (무료 API 없음)
+1. 저장소 **Actions** 탭 → **탄소배출권 가격 자동 수집** → **Run workflow**
+2. 지표 선택, 값(원통화 숫자), 기준일(`2026-10-10` 또는 월 대표값 `2026-10`), 출처 입력 → **Run workflow**
+3. 1~2분 뒤 사이트 새로고침. 출처는 표의 「출처」 칸에 그대로 보임
 
----
+지표를 비워 두고 Run workflow 를 누르면 자동 수집만 즉시 1회 실행
 
-## STEP 1. 공공데이터포털 API 키 발급 (5분, 무료)
+## 파일
 
-1. https://www.data.go.kr 회원가입·로그인
-2. https://www.data.go.kr/data/15094805/openapi.do 접속
-3. 우측 **[활용신청]** 버튼 클릭
-4. 활용목적 간단히 입력 (예: "개인 투자 분석용 배출권 시세 조회") → 신청
-5. **자동승인** (즉시). 마이페이지 → 오픈API → 인증키에서 **일반 인증키(Encoding)** 복사
-   - 이 키가 `SERVICE_KEY`입니다. 일 10,000회까지 무료
+| 파일 | 누가 고치나 |
+|---|---|
+| `data/prices.json` | **봇 전용** — 직접 올리거나 고치지 말 것 (덮어쓰면 수집 기록이 사라짐) |
+| `data/ecoeye.json` | 사람 — 에코아이 분기 공시 수치 (재고·수주잔고·CORSIA 실현가 등) |
+| `fetch_prices.py` | 수집 코드 (v3) |
+| `.github/workflows/fetch.yml` | 실행 시각·수동 입력칸 |
+| `index.html` | 화면 |
 
-> ⚠️ 신청 직후 키가 활성화되기까지 최대 1시간 걸릴 수 있습니다. 401 오류가 나면 잠시 후 재시도
+## v3 (2026-10-11) 에서 바뀐 것
 
----
+- 실행 1회에 하루치만 받던 것을 **빈 날 모두 보충**으로 변경 (7~10월 평일 10일 누락 해소, 첫 실행 때 6/30 이후 전체 보충)
+- 값이 안 바뀌면 커밋하지 않음 — 주말·휴장일 빈 커밋·재배포 제거
+- 종목명 규칙 구분 — KOC 와 i-KOC 를 섞지 않음, KCU26 화면 누락 해결, 응답에서 사라진 종목은 「수집 중단」 표시
+- 거래량 저장, 환율 자동, 한국시간 기록
+- 차트는 한 축만 사용 — 통화가 다른 지표는 「지수(기간 첫 값=100)」 보기로 비교
+- 에코아이 연동 지표: 활성 KAU 자동 선택(KAU25 종료 대응), CORSIA 시장가 vs 에코아이 실현가, 잔여 CORSIA 가치·국내 재고 평가를 시세로 매일 재계산
 
-## STEP 2. GitHub 저장소 만들기 (5분)
-
-1. https://github.com 회원가입·로그인
-2. 우측 상단 **+** → **New repository**
-3. 저장소 이름: `carbon-tracker` (원하는 이름)
-4. **Public** 선택 (GitHub Pages 무료는 Public만)
-5. **Create repository**
-6. 생성된 저장소에서 **Add file → Upload files**
-7. 이 폴더의 파일을 **구조 그대로** 업로드:
-   ```
-   carbon-tracker/
-   ├── index.html
-   ├── fetch_prices.py
-   ├── README.md
-   ├── .github/
-   │   └── workflows/
-   │       └── fetch.yml
-   └── data/
-       └── prices.json
-   ```
-   > `.github/workflows/` 폴더 구조가 중요합니다. 드래그앤드롭으로 폴더째 올리거나, 파일 경로에 `/`를 넣어 업로드하면 폴더가 생성됩니다
-8. **Commit changes**
-
----
-
-## STEP 3. API 키를 GitHub에 안전하게 등록 (2분)
-
-키를 코드에 직접 넣으면 노출되므로, GitHub의 비밀 저장소(Secrets)에 넣습니다.
-
-1. 저장소 → **Settings** → 좌측 **Secrets and variables** → **Actions**
-2. **New repository secret**
-3. Name: `SERVICE_KEY`
-4. Secret: STEP 1에서 복사한 인증키 붙여넣기
-5. **Add secret**
-
----
-
-## STEP 4. GitHub Pages 켜기 (2분)
-
-1. 저장소 → **Settings** → 좌측 **Pages**
-2. Source: **Deploy from a branch**
-3. Branch: **main** / 폴더: **/ (root)** → **Save**
-4. 1~2분 후 상단에 접속 주소가 표시됩니다:
-   ```
-   https://(내아이디).github.io/carbon-tracker/
-   ```
-   이 주소가 대시보드 URL입니다. 북마크하세요
-
----
-
-## STEP 5. 자동 수집 작동 확인 (3분)
-
-1. 저장소 → **Actions** 탭
-2. 좌측 **탄소배출권 가격 자동 수집** 클릭
-3. 우측 **Run workflow** → **Run workflow** (첫 실행은 수동으로)
-4. 초록 체크 ✅ 가 뜨면 성공. `data/prices.json`이 갱신됩니다
-5. 이후 **매일 오전 9시 자동 실행**됩니다 (별도 조작 불필요)
-
-> 휴장일(주말·공휴일)엔 새 데이터가 없어 "변경사항 없음"으로 표시됩니다. 정상입니다
-
----
-
-## 글로벌 지표 수동 갱신 방법
-
-EU·VCM·CORSIA 등은 무료 자동 소스가 없어 가끔 직접 갱신합니다.
-
-1. 저장소에서 `data/prices.json` 파일 클릭 → 연필(Edit) 아이콘
-2. 해당 지표의 `series`에 새 날짜·가격 추가. 예:
-   ```json
-   "EU_ETS": { ..., "26.06": 81.3, "26.09": 83.5 }
-   ```
-3. **Commit changes** → 대시보드 자동 반영
-
-가격 확인처:
-- EU ETS: https://tradingeconomics.com/commodity/carbon
-- RGGI: https://www.rggi.org/auctions/auction-results/prices-volumes
-- 영국 UK ETS: GOV.UK (월 1회 평균 공개)
-- VCM·CORSIA: Carbon Pulse (유료) 또는 뉴스 검색
-
-> 또는 저(클로드)에게 "탄소배출권 최신 가격 prices.json 형식으로 정리해줘"라고 하면 붙여넣을 데이터를 만들어 드립니다
-
----
-
-## 매년 1월 할 일 (종목 연도 갱신)
-
-배출권 종목명은 연도가 붙습니다(KAU25 → KAU26). 매년 초 `fetch_prices.py`의 `TARGET_ITEMS`에서 연도를 업데이트하세요:
-```python
-TARGET_ITEMS = {
-    "KAU25": ["KAU26", "KAU27"],   # 연도 +1
-    ...
-}
-```
-
----
-
-## 문제 해결
-
-| 증상 | 원인·해결 |
-|------|----------|
-| Actions에서 빨간 X | Secrets의 `SERVICE_KEY` 오타 확인. data.go.kr 키 활성화 대기(최대 1시간) |
-| "데이터 없음"만 표시 | 휴장일이거나 키 미활성. 평일에 재시도 |
-| 대시보드가 안 열림 | Pages 설정의 Branch=main, 폴더=root 확인. 배포 1~2분 대기 |
-| 401 오류 | data.go.kr 마이페이지에서 활용신청 "승인" 상태 확인 |
-| 가격이 안 바뀜 | 공공데이터는 전일 종가를 익일 오후 제공. 하루 시차 정상 |
-
----
-
-## 참고
-
-- API: 금융위원회 일반상품시세정보 (무료, 일 10,000회)
-- 자동 실행: GitHub Actions (Public 저장소 무료)
-- 호스팅: GitHub Pages (무료)
-- 데이터 갱신: 평일 1회 (전일 종가, 익일 제공)
+투자판단 참고용, 매매 추천 아님
