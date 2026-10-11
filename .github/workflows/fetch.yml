@@ -2,40 +2,95 @@ name: 탄소배출권 가격 자동 수집
 
 on:
   schedule:
-    # 매일 한국시간(KST) 오전 9시 = UTC 0시
-    # 공공데이터는 전일 데이터를 당일 오후 1시 이후 제공하므로 넉넉히 오전 실행
-    - cron: '0 0 * * *'
-  workflow_dispatch:   # 수동 실행 버튼
+    # 평일 18:15 KST (당일 종가가 올라온 경우 바로 반영)
+    - cron: '15 9 * * 1-5'
+    # 화~토 09:05 KST (전날 종가 늦게 올라온 것·빠진 날 보충)
+    - cron: '5 0 * * 2-6'
+  workflow_dispatch:
+    inputs:
+      series:
+        description: '수동 지표 입력 — 비워 두면 자동 수집만 실행'
+        type: choice
+        required: false
+        default: ''
+        options:
+          - ''
+          - CORSIA
+          - EU_ETS
+          - UK_ETS
+          - CN_CEA
+          - CA_ETS
+          - RGGI
+          - VCM
+      value:
+        description: '값 (원통화 숫자만 · CORSIA·VCM·CA·RGGI=달러, EU=유로, UK=파운드, 중국=위안)'
+        required: false
+        default: ''
+      date:
+        description: '기준일 (2026-10-10 또는 월 대표값이면 2026-10)'
+        required: false
+        default: ''
+      source:
+        description: '출처 (예: ICE CORSIA 선물 Dec26 정산가, Carbon Pulse 10/10 기사)'
+        required: false
+        default: ''
 
 permissions:
-  contents: write       # data 파일 커밋 권한
+  contents: write
+
+concurrency:
+  group: prices-json
+  cancel-in-progress: false
 
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: 저장소 체크아웃
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 파이썬 설정
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
-      - name: 가격 수집 실행
+      - name: 자동 수집 (KRX 배출권·환율·EU)
+        if: github.event_name != 'workflow_dispatch' || inputs.series == ''
         env:
           SERVICE_KEY: ${{ secrets.SERVICE_KEY }}
+          OILPRICE_KEY: ${{ secrets.OILPRICE_KEY }}
         run: python3 fetch_prices.py
 
-      - name: 변경사항 커밋
+      - name: 수동 지표 입력
+        if: github.event_name == 'workflow_dispatch' && inputs.series != ''
+        env:
+          MANUAL_SERIES: ${{ inputs.series }}
+          MANUAL_VALUE: ${{ inputs.value }}
+          MANUAL_DATE: ${{ inputs.date }}
+          MANUAL_SOURCE: ${{ inputs.source }}
+        run: python3 fetch_prices.py --manual
+
+      - name: 바뀐 경우에만 커밋
+        env:
+          EVENT: ${{ github.event_name }}
+          M_SERIES: ${{ inputs.series }}
+          M_DATE: ${{ inputs.date }}
         run: |
           git config user.name "carbon-tracker-bot"
           git config user.email "bot@users.noreply.github.com"
           git add data/prices.json
           if git diff --staged --quiet; then
-            echo "변경사항 없음 (휴장일 또는 동일 데이터)"
-          else
-            git commit -m "데이터 자동 갱신: $(date +'%Y-%m-%d')"
-            git push
-            echo "✅ 데이터 갱신 및 커밋 완료"
+            echo "변경 없음 — 커밋하지 않음"
+            exit 0
           fi
+          if [ "$EVENT" = "workflow_dispatch" ] && [ -n "$M_SERIES" ]; then
+            msg="수동 입력: $M_SERIES $M_DATE"
+          else
+            msg="데이터 자동 갱신: $(TZ=Asia/Seoul date +'%Y-%m-%d %H:%M')"
+          fi
+          git commit -m "$msg"
+          for i in 1 2 3; do
+            git pull --rebase --quiet && git push && break
+            sleep 5
+          done
