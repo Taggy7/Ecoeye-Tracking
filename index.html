@@ -103,26 +103,35 @@
 
   <div class="section">
     <div class="section-head">
-      <div class="section-title"><span class="bar"></span>가격 추이</div>
+      <div class="section-title"><span class="bar"></span>국내 시세 추이 <span class="badge">원/톤 · 일별</span></div>
       <div class="controls">
-        <select id="mode" class="btn" title="보기">
-          <option value="idx">지수 (기간 첫 값 = 100)</option>
-          <option value="krw">원화 환산 (원/톤)</option>
-          <option value="orig">원통화</option>
-        </select>
-        <select id="range" class="btn" title="기간">
+        <select id="rangeA" class="btn" title="기간">
           <option value="3">최근 3개월</option>
           <option value="6">최근 6개월</option>
-          <option value="12" selected>최근 1년</option>
-          <option value="0">전체</option>
+          <option value="12">최근 1년</option>
+          <option value="0" selected>전체</option>
         </select>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer">
-          <input type="checkbox" id="ecoOnly"> 에코아이 연관만</label>
       </div>
     </div>
-    <div class="toggles" id="toggles"></div>
-    <div class="chart-box"><canvas id="chart"></canvas></div>
-    <div class="chart-note" id="chartNote"></div>
+    <div class="toggles" id="togglesA"></div>
+    <div class="chart-box"><canvas id="chartA"></canvas></div>
+    <div class="chart-note" id="noteA"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title"><span class="bar"></span>국내·해외 비교 <span class="badge">월말 값</span></div>
+      <div class="controls">
+        <select id="modeB" class="btn" title="보기">
+          <option value="krw">원화 환산 (원/톤)</option>
+          <option value="idx">지수 (시작월 = 100)</option>
+        </select>
+        <select id="baseB" class="btn" title="시작월"></select>
+      </div>
+    </div>
+    <div class="toggles" id="togglesB"></div>
+    <div class="chart-box"><canvas id="chartB"></canvas></div>
+    <div class="chart-note" id="noteB"></div>
   </div>
 
   <div class="section">
@@ -290,55 +299,110 @@ function renderEco(){
     '할인율·재고 평가·CORSIA 가치는 시세가 바뀌면 매일 다시 계산된다. 고정 값은 data/ecoeye.json 에서 분기마다 고친다.';
 }
 
-// ── 차트 (단일 축) ──
-function windowStart(){
-  const months = +document.getElementById('range').value;
-  if(!months) return null;
-  const d = new Date(); d.setMonth(d.getMonth() - months); return d;
-}
-function renderToggles(){
-  document.getElementById('toggles').innerHTML = keys().map(k => {
-    const m = D.meta[k], on = !hidden[k];
-    return `<div class="toggle ${on ? 'active' : ''}" style="${on ? 'border-color:' + m.color : ''}" onclick="hidden['${k}']=!hidden['${k}'];renderToggles();renderChart()">` +
-      `<span class="swatch" style="background:${on ? m.color : 'var(--muted)'}"></span>${m.eco ? '★' : ''}${esc(m.label)}</div>`;
-  }).join('');
-}
-function renderChart(){
-  const mode = document.getElementById('mode').value, from = windowStart();
-  const ecoOnly = document.getElementById('ecoOnly').checked;
-  const show = keys().filter(k => !hidden[k] && (!ecoOnly || D.meta[k].eco));
-  const inWin = l => !from || endOf(l) >= from;
-  const labels = [...new Set(show.flatMap(k => Object.keys(ser(k)).filter(inWin)))].sort((a, b) => toDate(a) - toDate(b));
-  const skipped = [];
-  const datasets = show.map(k => {
-    const m = D.meta[k], s = ser(k);
-    let vals = labels.map(l => (l in s ? s[l] : null));
-    if(mode === 'krw'){ const r = fx(m.cur); if(!r){ skipped.push(m.label); return null; } vals = vals.map(v => v == null ? null : v * r); }
-    if(mode === 'idx'){ const base = vals.find(v => v != null); vals = vals.map(v => v == null || !base ? null : v / base * 100); }
-    if(vals.every(v => v == null)) return null;
-    return {label: m.label, data: vals, borderColor: m.color, backgroundColor: m.color,
-      borderWidth: m.emph ? 3.5 : (m.eco ? 2.4 : 1.4), pointRadius: labels.length > 90 ? 0 : 2, pointHoverRadius: 4,
-      spanGaps: true, tension: .2, borderDash: (m.emph || m.eco) ? [] : [5, 4], _cur: m.cur, _orig: labels.map(l => (l in s ? s[l] : null))};
+// ── 차트 공통 ──
+// 지표별 색은 고정(순위·필터와 무관). 8색 범주 팔레트(검증 통과), 9번째부터·중단 종목은 회색
+const COLOR = {KAU26:'#3987e5', KOC:'#d95926', KCU26:'#199e70', CORSIA:'#c98500', EU_ETS:'#9085e9', VCM:'#d55181', UK_ETS:'#008300', CN_CEA:'#e66767'};
+const GRAY = '#6b7385';
+function colorOf(k){ return st(k).mode === 'stopped' ? GRAY : (COLOR[k] || GRAY); }
+const GRAY_DASH = {CA_ETS: [7, 3], RGGI: [2, 3], KAU25: [5, 4], KCU25: [10, 4]};
+function dashOf(k){ return (st(k).mode === 'stopped' || !COLOR[k]) ? (GRAY_DASH[k] || [5, 4]) : []; }
+const charts = {};
+const hideA = {}, hideB = {};
+function xOf(lab){ const p = lab.split('.').map(Number); const y = p[0] < 100 ? p[0] + 2000 : p[0];
+  return p.length === 3 ? new Date(y, p[1] - 1, p[2]).getTime() : new Date(y, p[1] - 1, 15).getTime(); }
+function ymd(ms, short){ const d = new Date(ms), y = String(d.getFullYear()).slice(2), m = String(d.getMonth() + 1).padStart(2, '0');
+  return short ? `${y}.${m}` : `${y}.${m}.${String(d.getDate()).padStart(2, '0')}`; }
+function toggleHtml(k, hide, fn){ const on = !hide[k], c = colorOf(k);
+  return `<div class="toggle ${on ? 'active' : ''}" style="${on ? 'border-color:' + c : ''}" onclick="${fn}('${k}')">` +
+    `<span class="swatch" style="background:${on ? c : 'transparent'};border:2px solid ${c}"></span>${esc(D.meta[k].label)}${st(k).mode === 'stopped' ? ' (중단)' : ''}</div>`; }
+function baseOpts(yTitle, yFmt){ return {
+  responsive: true, maintainAspectRatio: false, animation: false,
+  interaction: {mode: 'x', intersect: false},
+  plugins: {legend: {display: false}, tooltip: {backgroundColor: '#22263a', borderColor: '#2e3350', borderWidth: 1, padding: 10}},
+  scales: {y: {title: {display: true, text: yTitle, color: '#8892a4', font: {size: 11}}, grace: '5%',
+               ticks: {color: '#8892a4', font: {size: 11}, callback: yFmt}, grid: {color: 'rgba(136,146,164,.12)'}}}}; }
+
+// ── 차트 A: 국내 시세 (실제 원/톤, 날짜 간격 그대로) ──
+function krKeys(){ return keys().filter(k => D.meta[k].cat === 'kr'); }
+function toggleA(k){ hideA[k] = !hideA[k]; renderTogglesA(); safe('chartA', renderChartA); }
+function renderTogglesA(){ document.getElementById('togglesA').innerHTML = krKeys().map(k => toggleHtml(k, hideA, 'toggleA')).join(''); }
+function renderChartA(){
+  const months = +document.getElementById('rangeA').value;
+  const newest = Math.max(...krKeys().map(k => latest(k) ? xOf(latest(k).d) : 0));
+  const from = months ? newest - months * 30.44 * 864e5 : -Infinity;
+  const sets = krKeys().filter(k => !hideA[k]).map(k => {
+    const s = ser(k), labs = sortedLabels(s).filter(l => xOf(l) >= from);
+    if(!labs.length) return null;
+    const dense = labs.length > 70, c = colorOf(k);
+    const novol = labs.map(l => vol(k, l) === 0);
+    return {label: D.meta[k].label, data: labs.map(l => ({x: xOf(l), y: s[l], _l: l})),
+      borderColor: c, backgroundColor: c, borderWidth: k === 'KOC' ? 2.5 : 2, borderDash: dashOf(k), tension: 0,
+      pointRadius: novol.map(n => n ? 3.5 : (dense ? 0 : 2.5)), pointHoverRadius: 5,
+      pointBackgroundColor: novol.map(n => n ? '#1a1d27' : c), pointBorderColor: c, pointBorderWidth: 1.5, _novol: novol};
   }).filter(Boolean);
-  const yTitle = {idx: '지수 (기간 첫 값 = 100)', krw: '원/톤 (원화 환산)', orig: '각국 통화'}[mode];
-  const cfg = {type: 'line', data: {labels, datasets}, options: {
-    responsive: true, maintainAspectRatio: false, interaction: {mode: 'index', intersect: false},
-    plugins: {legend: {display: false}, tooltip: {backgroundColor: '#22263a', borderColor: '#2e3350', borderWidth: 1, padding: 10,
-      callbacks: {label: c => { if(c.parsed.y == null) return null; const ds = c.dataset, o = ds._orig[c.dataIndex];
-        const raw = o == null ? '' : ' (' + money(o, ds._cur) + ')';
-        if(mode === 'idx') return `${ds.label}: ${c.parsed.y.toFixed(1)}${raw}`;
-        if(mode === 'krw') return `${ds.label}: ${fmt.format(Math.round(c.parsed.y))}원${ds._cur === 'KRW' ? '' : raw}`;
-        return `${ds.label}: ${money(c.parsed.y, ds._cur)}`; }}}},
-    scales: {y: {title: {display: true, text: yTitle, color: '#8892a4', font: {size: 11}},
-                 ticks: {color: '#8892a4', font: {size: 11}, callback: v => mode === 'krw' ? fmt.format(v) : v}, grid: {color: 'rgba(136,146,164,.12)'}},
-             x: {ticks: {color: '#8892a4', font: {size: 10}, maxRotation: 0, autoSkip: true, maxTicksLimit: 10}, grid: {display: false}}}}};
-  if(chart) chart.destroy();
-  chart = new Chart(document.getElementById('chart'), cfg);
-  const notes = [];
-  if(mode === 'idx') notes.push('지수 보기는 통화·단위가 달라도 같은 축에서 상승률을 비교한다. 각 지표의 기간 내 첫 값을 100으로 둔다.');
-  if(mode === 'krw') notes.push('원화 환산은 현재 환율을 과거 값에도 똑같이 곱한 것이다(환율 변동 미반영).');
-  if(skipped.length) notes.push('환율 없음으로 제외: ' + skipped.join(', '));
-  document.getElementById('chartNote').textContent = notes.join(' ');
+  const span = sets.length ? Math.max(...sets.flatMap(s => s.data.map(p => p.x))) - Math.min(...sets.flatMap(s => s.data.map(p => p.x))) : 0;
+  const o = baseOpts('원/톤', v => fmt.format(v));
+  o.scales.x = {type: 'linear', ticks: {color: '#8892a4', font: {size: 10}, maxRotation: 0, maxTicksLimit: 8, callback: v => ymd(v, span > 200 * 864e5)}, grid: {display: false}};
+  o.plugins.tooltip.callbacks = {
+    title: items => items.length ? items[0].raw._l : '',
+    label: c => `${c.dataset.label}: ${fmt.format(c.raw.y)}원${c.dataset._novol[c.dataIndex] ? ' (거래 없음)' : ''}`};
+  if(charts.A) charts.A.destroy();
+  charts.A = new Chart(document.getElementById('chartA'), {type: 'line', data: {datasets: sets}, options: o});
+  const flat = sets.filter(s => s._novol.some(Boolean)).map(s => s.label);
+  document.getElementById('noteA').textContent = '가로축은 실제 날짜 간격. 속이 빈 점 = 거래 없이 기준가가 이어진 날(거래량 0)' +
+    (flat.length ? ` — 해당: ${flat.join(', ')}` : ' — 거래량 기록은 v3 수집부터 쌓임') + '. 회색 점선 = 수집 중단 종목';
+}
+
+// ── 차트 B: 국내·해외 비교 (월말 값, 공통 기준월) ──
+const DEFAULT_B = ['KAU26', 'KOC', 'CORSIA', 'EU_ETS', 'VCM'];
+function bKeys(){ return keys(); }
+function monthly(k){ // 월말 값: 일별은 그 달 마지막 값, 월 대표값은 그대로
+  const out = {}; for(const l of sortedLabels(ser(k))){ const p = l.split('.'); out[p[0] + '.' + p[1]] = ser(k)[l]; } return out; }
+function monthsBetween(a, b){ const out = []; let [y, m] = a.split('.').map(Number); const [y2, m2] = b.split('.').map(Number);
+  while(y < y2 || (y === y2 && m <= m2)){ out.push(String(y).padStart(2, '0') + '.' + String(m).padStart(2, '0')); m++; if(m > 12){ m = 1; y++; } } return out; }
+function carry(mo, month, all){ // 기준월 값이 없으면 직전 2개월 안의 값을 쓴다
+  const i = all.indexOf(month); for(let j = i; j >= Math.max(0, i - 2); j--){ if(all[j] in mo) return {v: mo[all[j]], from: all[j]}; } return null; }
+function toggleB(k){ hideB[k] = !hideB[k]; renderTogglesB(); safe('chartB', renderChartB); }
+function renderTogglesB(){ document.getElementById('togglesB').innerHTML = bKeys().map(k => toggleHtml(k, hideB, 'toggleB')).join(''); }
+function setupB(){
+  bKeys().forEach(k => { if(!(k in hideB)) hideB[k] = false; });
+  const all = [...new Set(bKeys().flatMap(k => Object.keys(monthly(k))))].sort((a, b) => xOf(a) - xOf(b));
+  const last = all[all.length - 1], first = all[0];
+  const opts = monthsBetween(first, last).reverse();
+  const def = opts[opts.length - 1];   // 기본: 자료가 시작되는 가장 이른 달(전체 기간)
+  document.getElementById('baseB').innerHTML = opts.map(m => `<option value="${m}" ${m === def ? 'selected' : ''}>20${m.replace('.', '년 ')}월부터</option>`).join('');
+}
+function renderChartB(){
+  const mode = document.getElementById('modeB').value, base = document.getElementById('baseB').value;
+  const all = [...new Set(bKeys().flatMap(k => Object.keys(monthly(k))))].sort((a, b) => xOf(a) - xOf(b));
+  const months = monthsBetween(base, all[all.length - 1]), full = monthsBetween(all[0], all[all.length - 1]);
+  const out = [], carried = [], stale = [];
+  const sets = bKeys().filter(k => !hideB[k]).map(k => {
+    const mo = monthly(k), m = D.meta[k], r = fx(m.cur);
+    let b0 = null;
+    if(mode === 'idx'){ b0 = carry(mo, base, full); if(!b0){ out.push(m.label); return null; } }
+    if(mode === 'krw' && !r){ out.push(m.label); return null; }
+    const vals = months.map(x => x in mo ? (mode === 'idx' ? mo[x] / b0.v * 100 : mo[x] * r) : null);
+    if(mode === 'idx' && vals[0] == null) vals[0] = 100;          // 직전 값으로 기준을 잡은 경우 기준월에 100 표시
+    if(vals.slice(1).every(v => v == null)){ stale.push(m.label); return null; }
+    if(mode === 'idx' && b0.from !== base) carried.push(`${m.label}(${b0.from} 값)`);
+    return {label: m.label, data: vals, borderColor: colorOf(k), backgroundColor: colorOf(k), borderWidth: ['KOC', 'CORSIA'].includes(k) ? 2.5 : 2,
+      borderDash: dashOf(k), spanGaps: true, tension: 0, pointRadius: 3, pointHoverRadius: 5, _cur: m.cur, _raw: months.map(x => mo[x])};
+  }).filter(Boolean);
+  const o = baseOpts(mode === 'idx' ? `지수 (${base} = 100)` : '원/톤 (현재 환율 환산)', v => mode === 'idx' ? v : fmt.format(v));
+  o.interaction = {mode: 'index', intersect: false};
+  o.scales.x = {ticks: {color: '#8892a4', font: {size: 10}, maxRotation: 0}, grid: {display: false}};
+  o.plugins.tooltip.callbacks = {label: c => { if(c.parsed.y == null) return null; const ds = c.dataset, raw = ds._raw[c.dataIndex];
+    return mode === 'idx' ? `${ds.label}: ${c.parsed.y.toFixed(1)} (${money(raw, ds._cur)})` : `${ds.label}: ${fmt.format(Math.round(c.parsed.y))}원`; }};
+  if(charts.B) charts.B.destroy();
+  charts.B = new Chart(document.getElementById('chartB'), {type: 'line', data: {labels: months, datasets: sets}, options: o});
+  const n = [mode === 'idx' ? `모든 선이 ${base} 월말 값을 100으로 같은 날에서 출발한다. 일별 국내 시세는 각 달 마지막 값.`
+                            : '원화 환산은 현재 환율을 과거 값에도 똑같이 곱한 것(환율 변동 미반영).'];
+  if(carried.length) n.push('기준월 값이 없어 직전 값을 쓴 지표: ' + carried.join(', ') + '.');
+  if(out.length) n.push('기준월 이전 자료가 없어 제외: ' + out.join(', ') + ' — 기준월을 늦추면 나타남.');
+  if(stale.length) n.push('기준월 뒤로 새 값이 없어 제외: ' + stale.join(', ') + ' — 수동 입력이 필요함.');
+  n.push('수동 지표는 값마다 출처가 달라(아래 표 「출처」) 선의 기울기를 시장 흐름으로 단정하지 말 것.');
+  document.getElementById('noteB').textContent = n.join(' ');
 }
 
 // ── 표 ──
@@ -363,7 +427,7 @@ function renderTable(){
 function safe(name, fn){
   try{ fn(); }catch(err){
     console.error('[' + name + ']', err);
-    if(name === 'chart'){ document.querySelector('.chart-box').innerHTML =
+    if(name.startsWith('chart')){ const cv = document.getElementById(name); if(cv) cv.parentElement.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12.5px;text-align:center;line-height:1.8">' +
       '차트 라이브러리를 불러오지 못했습니다.<br>카드와 표의 수치는 정상입니다. 새로고침해 보세요.</div>'; }
   }
@@ -373,9 +437,12 @@ async function main(){
   catch(e){ document.getElementById('statusLine').textContent = '데이터를 불러오지 못했습니다 — data/prices.json 확인'; return; }
   try{ E = await getJSON('data/ecoeye.json'); }catch(e){ E = null; }
   safe('status', renderStatus); safe('cards', renderCards); safe('eco', renderEco);
-  safe('toggles', renderToggles); safe('chart', renderChart); safe('table', renderTable);
+  safe('togglesA', renderTogglesA); safe('chartA', renderChartA);
+  safe('setupB', setupB); safe('togglesB', renderTogglesB); safe('chartB', renderChartB);
+  safe('table', renderTable);
 }
-['mode', 'range', 'ecoOnly'].forEach(id => document.getElementById(id).addEventListener('change', () => safe('chart', renderChart)));
+document.getElementById('rangeA').addEventListener('change', () => safe('chartA', renderChartA));
+['modeB', 'baseB'].forEach(id => document.getElementById(id).addEventListener('change', () => safe('chartB', renderChartB)));
 main();
 </script>
 </body>
