@@ -105,6 +105,8 @@
     <div class="section-head">
       <div class="section-title"><span class="bar"></span>국내 시세 추이 <span class="badge">원/톤 · 일별</span></div>
       <div class="controls">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);cursor:pointer">
+          <input type="checkbox" id="showVint"> 세부 연물도 표시</label>
         <select id="rangeA" class="btn" title="기간">
           <option value="3">최근 3개월</option>
           <option value="6">최근 6개월</option>
@@ -137,6 +139,12 @@
   <div class="section">
     <div class="section-head"><div class="section-title"><span class="bar"></span>최신 시세 상세</div></div>
     <div class="table-box"><table id="detailTable"></table></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div class="section-title"><span class="bar"></span>연물별 시세 <span class="badge">KRX 전 종목 · 기준가와 실제 거래</span></div></div>
+    <div class="box" style="margin-bottom:10px">KRX 배출권은 연물(예: KOC22-27)마다 따로 거래된다. 거래가 없는 날에도 종가 칸에는 기준가가 찍히므로, <b>실제 시세는 「최근 거래」 칸</b>으로 본다. 위 카드의 「KOC 실거래 가중평균」은 거래가 있었던 연물만 거래량으로 가중한 값이다.</div>
+    <div class="table-box"><table id="vintageTable"></table></div>
   </div>
 
   <div class="section">
@@ -191,7 +199,8 @@ function ageDays(lab){ return Math.floor((Date.now() - endOf(lab).getTime()) / 8
 function sortedLabels(s){ return Object.keys(s || {}).sort((a, b) => toDate(a) - toDate(b)); }
 
 // ── 데이터 접근 ──
-const keys = () => Object.keys(D.meta);
+const keys = () => Object.keys(D.meta).filter(k => !D.meta[k].vintage);
+const vintageKeys = () => Object.keys(D.meta).filter(k => D.meta[k].vintage);
 const ser = k => D.series[k] || {};
 const st = k => (D.status && D.status[k]) || {mode: D.meta[k].auto ? 'auto' : 'manual'};
 const fx = c => c === 'KRW' ? 1 : ((D.fx && D.fx[c]) || null);
@@ -260,18 +269,18 @@ function renderEco(){
   const 억 = n => fmt.format(Math.round(n / 1e8)) + '억';
   const 만톤 = n => (n / 1e4).toLocaleString(undefined, {maximumFractionDigits: 1}) + '만톤';
   const cards = [];
-  const kauK = activeKAU(), kau = kauK ? latest(kauK) : null, koc = latest('KOC');
+  const kauK = activeKAU(), kau = kauK ? latest(kauK) : null, koc = latest('KOC_TRD') || latest('KOC'), kocName = latest('KOC_TRD') ? 'KOC 실거래' : 'KOC';
 
   if(kau && koc){
-    const disc = (1 - koc.v / kau.v) * 100, v0 = vol('KOC', koc.d);
-    cards.push({k: `KOC ÷ ${kauK} 할인율`, live: 1, v: disc.toFixed(1) + '%',
-      d: `${kauK} ${fmt.format(kau.v)}원(${kau.d}) · KOC ${fmt.format(koc.v)}원(${koc.d})<br>격차 ${fmt.format(Math.round(kau.v - koc.v))}원/톤` +
-         (v0 === 0 ? '<br><span class="stale">KOC 최근일 거래 없음 — 기준가가 이어진 값</span>' : '')});
+    const disc = (1 - koc.v / kau.v) * 100, tv = vol('KOC_TRD', koc.d);
+    cards.push({k: `${kocName} ÷ ${kauK} 할인율`, live: 1, v: disc.toFixed(1) + '%',
+      d: `${kauK} ${fmt.format(kau.v)}원(${kau.d}) · ${kocName} ${fmt.format(koc.v)}원(${koc.d}${tv ? ', ' + fmt.format(tv) + '톤' : ''})<br>격차 ${fmt.format(Math.round(kau.v - koc.v))}원/톤` +
+         (ageDays(koc.d) > 7 ? `<br><span class="stale">KOC 마지막 거래가 ${ageDays(koc.d)}일 전 — 이후는 거래 없음</span>` : '')});
   }
   if(E.domestic_koc_ikoc_t && koc){
     const q = E.domestic_koc_ikoc_t, f = E.domestic_forward_assumed_krw || 20000;
     cards.push({k: '국내 재고 KOC·i-KOC 평가', est: 1, v: 억(q * koc.v),
-      d: `${만톤(q)} × KOC 현물 ${fmt.format(koc.v)}원<br>회사 선도 가정 ${fmt.format(f)}원이면 ${억(q * f)}<br>27년 선도계약 단가가 고정이면 현물 상승분은 못 누림`});
+      d: `${만톤(q)} × ${kocName} ${fmt.format(koc.v)}원(${koc.d})<br>회사 선도 가정 ${fmt.format(f)}원이면 ${억(q * f)}<br>27년 선도계약 단가가 고정이면 현물 상승분은 못 누림`});
   }
   const cor = latest('CORSIA');
   if(cor && E.corsia_asp_usd){
@@ -301,7 +310,7 @@ function renderEco(){
 
 // ── 차트 공통 ──
 // 지표별 색은 고정(순위·필터와 무관). 8색 범주 팔레트(검증 통과), 9번째부터·중단 종목은 회색
-const COLOR = {KAU26:'#3987e5', KOC:'#d95926', KCU26:'#199e70', CORSIA:'#c98500', EU_ETS:'#9085e9', VCM:'#d55181', UK_ETS:'#008300', CN_CEA:'#e66767'};
+const COLOR = {KAU26:'#3987e5', KOC_TRD:'#d95926', KCU26:'#199e70', CORSIA:'#c98500', EU_ETS:'#9085e9', VCM:'#d55181', UK_ETS:'#008300', CN_CEA:'#e66767'};
 const GRAY = '#6b7385';
 function colorOf(k){ return st(k).mode === 'stopped' ? GRAY : (COLOR[k] || GRAY); }
 const GRAY_DASH = {CA_ETS: [7, 3], RGGI: [2, 3], KAU25: [5, 4], KCU25: [10, 4]};
@@ -323,9 +332,11 @@ function baseOpts(yTitle, yFmt){ return {
                ticks: {color: '#8892a4', font: {size: 11}, callback: yFmt}, grid: {color: 'rgba(136,146,164,.12)'}}}}; }
 
 // ── 차트 A: 국내 시세 (실제 원/톤, 날짜 간격 그대로) ──
-function krKeys(){ return keys().filter(k => D.meta[k].cat === 'kr'); }
+function krKeys(){ return [...keys(), ...vintageKeys()].filter(k => D.meta[k].cat === 'kr'); }
 function toggleA(k){ hideA[k] = !hideA[k]; renderTogglesA(); safe('chartA', renderChartA); }
-function renderTogglesA(){ document.getElementById('togglesA').innerHTML = krKeys().map(k => toggleHtml(k, hideA, 'toggleA')).join(''); }
+function renderTogglesA(){ vintageKeys().forEach(k => { if(!(k in hideA)) hideA[k] = true; });
+  const sv = document.getElementById('showVint').checked;
+  document.getElementById('togglesA').innerHTML = krKeys().filter(k => sv || !D.meta[k].vintage).map(k => toggleHtml(k, hideA, 'toggleA')).join(''); }
 function renderChartA(){
   const months = +document.getElementById('rangeA').value;
   const newest = Math.max(...krKeys().map(k => latest(k) ? xOf(latest(k).d) : 0));
@@ -335,8 +346,8 @@ function renderChartA(){
     if(!labs.length) return null;
     const dense = labs.length > 70, c = colorOf(k);
     const novol = labs.map(l => vol(k, l) === 0);
-    return {label: D.meta[k].label, data: labs.map(l => ({x: xOf(l), y: s[l], _l: l})),
-      borderColor: c, backgroundColor: c, borderWidth: k === 'KOC' ? 2.5 : 2, borderDash: dashOf(k), tension: 0,
+    return {label: D.meta[k].label, data: labs.map(l => ({x: xOf(l), y: s[l], _l: l})), spanGaps: true,
+      borderColor: c, backgroundColor: c, borderWidth: k === 'KOC_TRD' ? 2.5 : 2, borderDash: dashOf(k), tension: 0,
       pointRadius: novol.map(n => n ? 3.5 : (dense ? 0 : 2.5)), pointHoverRadius: 5,
       pointBackgroundColor: novol.map(n => n ? '#1a1d27' : c), pointBorderColor: c, pointBorderWidth: 1.5, _novol: novol};
   }).filter(Boolean);
@@ -354,7 +365,7 @@ function renderChartA(){
 }
 
 // ── 차트 B: 국내·해외 비교 (월말 값, 공통 기준월) ──
-const DEFAULT_B = ['KAU26', 'KOC', 'CORSIA', 'EU_ETS', 'VCM'];
+const DEFAULT_B = ['KAU26', 'KOC_TRD', 'CORSIA', 'EU_ETS', 'VCM'];
 function bKeys(){ return keys(); }
 function monthly(k){ // 월말 값: 일별은 그 달 마지막 값, 월 대표값은 그대로
   const out = {}; for(const l of sortedLabels(ser(k))){ const p = l.split('.'); out[p[0] + '.' + p[1]] = ser(k)[l]; } return out; }
@@ -386,7 +397,7 @@ function renderChartB(){
     if(mode === 'idx' && vals[0] == null) vals[0] = 100;          // 직전 값으로 기준을 잡은 경우 기준월에 100 표시
     if(vals.slice(1).every(v => v == null)){ stale.push(m.label); return null; }
     if(mode === 'idx' && b0.from !== base) carried.push(`${m.label}(${b0.from} 값)`);
-    return {label: m.label, data: vals, borderColor: colorOf(k), backgroundColor: colorOf(k), borderWidth: ['KOC', 'CORSIA'].includes(k) ? 2.5 : 2,
+    return {label: m.label, data: vals, borderColor: colorOf(k), backgroundColor: colorOf(k), borderWidth: ['KOC_TRD', 'CORSIA'].includes(k) ? 2.5 : 2,
       borderDash: dashOf(k), spanGaps: true, tension: 0, pointRadius: 3, pointHoverRadius: 5, _cur: m.cur, _raw: months.map(x => mo[x])};
   }).filter(Boolean);
   const o = baseOpts(mode === 'idx' ? `지수 (${base} = 100)` : '원/톤 (현재 환율 환산)', v => mode === 'idx' ? v : fmt.format(v));
@@ -403,6 +414,29 @@ function renderChartB(){
   if(stale.length) n.push('기준월 뒤로 새 값이 없어 제외: ' + stale.join(', ') + ' — 수동 입력이 필요함.');
   n.push('수동 지표는 값마다 출처가 달라(아래 표 「출처」) 선의 기울기를 시장 흐름으로 단정하지 말 것.');
   document.getElementById('noteB').textContent = n.join(' ');
+}
+
+
+// ── 연물별 표 ──
+function renderVintages(){
+  const ks = [...keys().filter(k => D.meta[k].cat === 'kr' && !D.meta[k].derived), ...vintageKeys()];
+  const t = document.getElementById('vintageTable');
+  t.innerHTML = '<thead><tr><th class="l">종목</th><th>종가(기준가 포함)</th><th class="l">기준일</th><th>최근 거래가</th><th class="l">최근 거래일</th><th>최근 30일 거래량</th><th class="l">상태</th></tr></thead><tbody></tbody>';
+  const tb = t.querySelector('tbody');
+  const rows = ks.map(k => {
+    const a = latest(k); if(!a) return null;
+    const v = (D.volume && D.volume[k]) || {}, traded = Object.keys(v).filter(l => v[l] > 0).sort((x, y) => toDate(x) - toDate(y));
+    const lt = traded.length ? traded[traded.length - 1] : null;
+    const cut = new Date(endOf(a.d)); cut.setDate(cut.getDate() - 30);
+    const v30 = Object.keys(v).filter(l => endOf(l) >= cut).reduce((s, l) => s + (v[l] || 0), 0);
+    return {k, a, lt, v30, name: (st(k).name || D.meta[k].label)};
+  }).filter(Boolean).sort((x, y) => (y.v30 - x.v30) || x.name.localeCompare(y.name));
+  rows.forEach(r => {
+    const m = st(r.k).mode;
+    tb.insertAdjacentHTML('beforeend', `<tr><td class="l">${esc(r.name)}</td><td>${fmt.format(r.a.v)}원</td><td class="l" style="font-size:11px">${r.a.d}</td>` +
+      `<td>${r.lt ? fmt.format(ser(r.k)[r.lt]) + '원' : '<span class="stale">거래 없음</span>'}</td><td class="l" style="font-size:11px">${r.lt || '–'}</td>` +
+      `<td>${r.v30 ? fmt.format(r.v30) + '톤' : '<span class="stale">0</span>'}</td><td class="l">${m === 'stopped' ? '<span class="tag t-stop">수집 중단</span>' : ''}</td></tr>`);
+  });
 }
 
 // ── 표 ──
@@ -439,9 +473,10 @@ async function main(){
   safe('status', renderStatus); safe('cards', renderCards); safe('eco', renderEco);
   safe('togglesA', renderTogglesA); safe('chartA', renderChartA);
   safe('setupB', setupB); safe('togglesB', renderTogglesB); safe('chartB', renderChartB);
-  safe('table', renderTable);
+  safe('table', renderTable); safe('vintages', renderVintages);
 }
 document.getElementById('rangeA').addEventListener('change', () => safe('chartA', renderChartA));
+document.getElementById('showVint').addEventListener('change', () => { renderTogglesA(); });
 ['modeB', 'baseB'].forEach(id => document.getElementById(id).addEventListener('change', () => safe('chartB', renderChartB)));
 main();
 </script>

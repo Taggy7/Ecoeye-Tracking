@@ -44,6 +44,11 @@ UA = {"User-Agent": "carbon-tracker/3.0"}
 # 수동 입력을 받는 지표 (자동 수집 원천이 없는 것)
 MANUAL_KEYS = ["CORSIA", "EU_ETS", "UK_ETS", "CN_CEA", "CA_ETS", "RGGI", "VCM"]
 
+# v2는 종목명 부분일치로 'KOC21-26'을 'KOC' 로 받아 왔다 → 같은 종목이므로 기존 키를 이어 쓴다
+# (에코아이 지속점검이 /series/KOC 를 읽고 있어 키 이름을 바꾸지 않는다)
+LEGACY_KEY = {"KOC21": "KOC"}
+DERIVED = {"KOC_TRD": ("KOC", "KOC 실거래 가중평균 (전 연물)"), "IKOC_TRD": ("IKOC", "i-KOC 실거래 가중평균 (전 연물)")}
+
 # 새로 생기는 국내 종목의 기본 색
 NEW_COLORS = ["#3b82f6", "#22d3ee", "#a5b4fc", "#38bdf8", "#818cf8", "#06b6d4"]
 
@@ -170,6 +175,25 @@ def migrate(data):
             status[key] = {"mode": "manual", "last": lab, "source": src}
         seeds.append(tag)
 
+    # v3b: 'KOC' 의 정체(KOC21-26) 정리 — 첫 v3 실행이 따로 만든 KOC21 을 KOC 로 합친다
+    if "koc_split_v3b" not in seeds:
+        for part in ("series", "volume"):
+            src = data.get(part, {}).pop("KOC21", None)
+            if src:
+                data[part].setdefault("KOC", {}).update(src)
+        meta.pop("KOC21", None)
+        status.pop("KOC21", None)
+        if "KOC" in meta:
+            meta["KOC"].update({"label": "KOC21-26 (구 'KOC' 시리즈)", "eco": False, "emph": False, "vintage": True})
+            status.setdefault("KOC", {})["note"] = ("v2는 종목명 부분일치로 KOC21-26 을 'KOC'로 받아 왔음 — 거래가 거의 없어 기준가가 이어진 값이 대부분. "
+                                                    "26.03·26.06 월값은 v2 이전 수동 입력(연물 불명)")
+        seeds.append("koc_split_v3b")
+    for key, m in meta.items():
+        if m.get("cat") == "kr" and key not in DERIVED and "vintage" not in m:
+            m["vintage"] = is_vintage(key)
+        if m.get("vintage"):
+            m["eco"] = False
+
     # 상태표 초기화 — 수동 지표는 기존 meta.asof·note 를 출처로 옮긴다
     for key, m in meta.items():
         s = series.get(key) or {}
@@ -228,7 +252,8 @@ def classify(name):
         kind = "IKCU" if "KCU" in n else "IKOC"
         return kind + (m.group(2) if m else "")
     if m:
-        return m.group(1) + m.group(2)
+        key = m.group(1) + m.group(2)
+        return LEGACY_KEY.get(key, key)
     if "KOC" in n:
         return "KOC"
     if "KAU" in n or "KCU" in n:
@@ -243,6 +268,16 @@ def to_num(x):
         return None
 
 
+def is_vintage(key):
+    """화면 기본에서 접어 둘 세부 연물: KOC·i-KOC·i-KCU 연물 전부, 올해보다 뒤 연물의 KAU·KCU"""
+    m = re.fullmatch(r"(KAU|KCU|KOC|IKOC|IKCU)(\d{2})", key)
+    if not m:
+        return key == "KOC"
+    if m.group(1) in ("KOC", "IKOC", "IKCU"):
+        return True
+    return int(m.group(2)) > now_kst().year % 100
+
+
 def ensure_meta(data, key):
     meta = data["meta"]
     if key in meta:
@@ -254,7 +289,7 @@ def ensure_meta(data, key):
     label = f"{shown}{yy or ''} ({'20' + yy + '년물 ' if yy else ''}{names.get(kind, '')})"
     color = NEW_COLORS[len([k for k in meta if meta[k].get('cat') == 'kr']) % len(NEW_COLORS)]
     meta[key] = {"label": label, "cat": "kr", "cur": "KRW", "color": color,
-                 "eco": kind in ("KAU", "KCU", "KOC", "IKOC"), "auto": True}
+                 "eco": False, "auto": True, "vintage": is_vintage(key)}
     log(f"  ➕ 새 종목 추가: {key} ({label})")
 
 
@@ -300,19 +335,15 @@ def fetch_krx(data, today=None, caller=krx_call):
         log("⚠️ SERVICE_KEY 미설정 — GitHub Secrets 에 SERVICE_KEY 를 등록하세요. KRX 수집을 건너뜁니다.")
         return 0
     today = today or now_kst().date()
-    auto_keys = [k for k, m in data["meta"].items() if m.get("auto") and m.get("cat") == "kr"]
-    have = set()
-    for k in auto_keys:
-        have |= {lab for lab in (data["series"].get(k) or {}) if lab.count(".") == 2}
+    done_set = set(data.get("krx_done") or [])
     window = recent_weekdays(BACKFILL_WEEKDAYS, today)
-    seeds = data.setdefault("_seeded", [])
-    deep = "deep_backfill_v3" not in seeds and have
-    if deep:   # v3 첫 실행 1회: 일별 기록이 시작된 날부터 오늘까지 빈 평일을 모두 보충
-        start = min(parse_label(l) for l in have)
+    deep = not done_set
+    if deep:   # 처음 1회: 일별 기록이 시작된 날부터 모든 평일을 전 종목으로 다시 받는다
+        start = datetime.date(2026, 6, 30)
         window = [start + datetime.timedelta(days=i) for i in range((today - start).days + 1)]
         window = [d for d in window if d.weekday() < 5]
-    todo = [d for d in window if label_of(d) not in have]
-    log(f"KRX: {'첫 실행 전체 보충 — ' if deep else ''}최근 {len(window)}영업일 중 빈 날 {len(todo)}일 조회")
+    todo = [d for d in window if label_of(d) not in done_set]
+    log(f"KRX: {'전 종목 전체 재수집 — ' if deep else ''}최근 {len(window)}영업일 중 안 받은 날 {len(todo)}일 조회")
     filled, answered = 0, 0
     for d in todo:
         items = caller(d)
@@ -322,18 +353,20 @@ def fetch_krx(data, today=None, caller=krx_call):
             continue
         keys = apply_krx_day(data, d, items)
         if keys:
+            done_set.add(label_of(d))
             filled += 1
-            log(f"  ✅ {label_of(d)}: " + ", ".join(f"{k} {data['series'][k][label_of(d)]:,.0f}" for k in sorted(keys)))
-    if deep and answered:   # API가 한 번이라도 응답했을 때만 「전체 보충 완료」로 기록
-        seeds.append("deep_backfill_v3")
+            main = [k for k in sorted(keys) if not data["meta"].get(k, {}).get("vintage")]
+            log(f"  ✅ {label_of(d)}: {len(keys)}종목 · " + ", ".join(f"{k} {data['series'][k][label_of(d)]:,.0f}" for k in main))
+    data["krx_done"] = sorted(done_set, key=parse_label)
     mark_stopped(data)
+    compute_traded(data)
     log(f"KRX: {filled}일 새로 채움")
     return filled
 
 
 def mark_stopped(data):
     """다른 종목은 들어오는데 이 종목만 오래 안 들어오면 「수집 중단」으로 표시"""
-    kr = [k for k, m in data["meta"].items() if m.get("auto") and m.get("cat") == "kr"]
+    kr = [k for k, m in data["meta"].items() if m.get("auto") and m.get("cat") == "kr" and k not in DERIVED]
     lasts = {}
     for k in kr:
         daily = [l for l in (data["series"].get(k) or {}) if l.count(".") == 2]
@@ -351,6 +384,31 @@ def mark_stopped(data):
         elif st.get("mode") == "stopped":
             st["mode"] = "auto"
             st.pop("note", None)
+
+
+def compute_traded(data):
+    """연물별 종가 × 거래량으로 실거래 가중평균을 만든다 (거래가 있었던 날만). 매번 처음부터 다시 계산."""
+    for dkey, (kind, label) in DERIVED.items():
+        members = [k for k in data["series"]
+                   if (k == "KOC" and kind == "KOC") or re.fullmatch(kind + r"\d{2}", k)]
+        acc = {}
+        for k in members:
+            vols = data["volume"].get(k) or {}
+            for lab, v in vols.items():
+                p = (data["series"].get(k) or {}).get(lab)
+                if v and p:
+                    a = acc.setdefault(lab, [0.0, 0])
+                    a[0] += p * v
+                    a[1] += v
+        if not acc:
+            continue
+        data["series"][dkey] = {lab: round(a[0] / a[1]) for lab, a in sorted(acc.items(), key=lambda x: parse_label(x[0]))}
+        data["volume"][dkey] = {lab: a[1] for lab, a in sorted(acc.items(), key=lambda x: parse_label(x[0]))}
+        data["meta"].setdefault(dkey, {"label": label, "cat": "kr", "cur": "KRW", "color": "#d95926",
+                                       "eco": True, "emph": True, "auto": True, "derived": True})
+        last = max(acc, key=parse_label)
+        data["status"][dkey] = {"mode": "auto", "last": last,
+                                "source": f"{kind} 연물별 종가×거래량 가중평균 — 거래가 있었던 날만 점이 찍힘"}
 
 
 # ───────────────────────── 환율 (ECB 기준, 키 불필요) ─────────────────────────
