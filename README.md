@@ -40,3 +40,34 @@
 - 에코아이 연동 지표: 활성 KAU 자동 선택(KAU25 종료 대응), CORSIA 시장가 vs 에코아이 실현가, 잔여 CORSIA 가치·국내 재고 평가를 시세로 매일 재계산
 
 투자판단 참고용, 매매 추천 아님
+
+
+## 투자분석 요약 자동 생성 (v3)
+
+수집·수동 입력 직후 회귀 테스트와 `build_report.py`를 실행하여
+`data/report_digest.md` 및 `data/report_digest.json`을 가격 데이터와 함께 커밋한다.
+보고서 생성기는 네트워크를 호출하거나 `data/prices.json`을 수정하지 않는다.
+
+```bash
+python3 -m unittest discover -s tests -v
+python3 build_report.py --today 2026-10-13
+```
+
+- KOC는 KOC21-26 연물이며 i-KOC·전체 KOC 대표가격이 아니다.
+- `KOC_TRD`·`IKOC_TRD`는 각 계열 연물 종가×양의 거래량 가중평균을 독립 검산한다.
+  체결별 VWAP가 아니며 거래 연물 구성이 변하면 평균도 달라진다. 저장값과 0.5원 초과 차이는 경고한다.
+- 거래량 0은 `reference_no_trade`, 누락은 `volume_unknown`이다.
+  `published_price_changes`는 기준가격 변동, `changes`는 국내 지표의 거래 확인 관측 변화다.
+  `last_trade` 및 `change_basis`의 양 끝 날짜·가격과 함께 읽는다. 장기간 무거래 시 현재 가격으로 해석하지 않는다.
+- 월값은 관측기간을 보존하고 정확한 날짜(`last_date`)는 null로 둔다.
+  수동 가격은 관측별 상품·출처 연속성을 알 수 없어 기간 수익률 계산에서 제외한다.
+  `status.source`는 최신 출처일 뿐 과거 모든 관측의 출처가 아니다.
+- 기간 기준점은 목표일 이전 7일 이내 일값만 허용한다. 기준점이 없으면 null이다.
+- `derived.value`는 동일 관측일·동일 통화·거래 확인 조건을 만족할 때만 제공한다.
+  비동기·무거래 쌍은 `latest_quote_ratio`에 참고값을, `last_common_trade`에 마지막 동일 거래일 비율을 별도 저장한다.
+- 외화의 원화환산은 `fx_asof`의 최신 환율 스냅샷이며 역사적 관측일 환산이 아니다.
+- JSON `schema_version: 3`은 기존 PR 스키마에서 변경됐다. 기존 소비자는 위 nullable 필드를 처리해야 한다.
+- 검증 기록과 기존 보고서 대비 차이: [docs/report-v3-validation.md](docs/report-v3-validation.md).
+- 회귀 테스트는 2026-10-13 원본 사본과 합성 사례를 사용하며 외부 API 키가 필요 없다.
+
+보고서 생성일이 바뀌면 요약의 일자도 갱신된다. 가격 원본은 수집기가 실제 변경한 경우에만 바뀐다.
