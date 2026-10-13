@@ -1,399 +1,521 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-탄소배출권 가격 자동 수집 스크립트 (v2 - 엔드포인트 자동탐색)
-- 공공데이터포털 '일반상품시세정보' API의 배출권시세에서 KAU/KCU/KOC 수집
-- 배출권 오퍼레이션명이 문서에 없어, 여러 후보를 자동 시도하여 맞는 것을 찾음
-- data/prices.json 에 시계열 누적 저장
+탄소배출권 가격 수집 v3 (2026-10-11)
 
-수동 실행: SERVICE_KEY=발급키 python3 fetch_prices.py
+v2 → v3 에서 바뀐 것
+ 1. 빠진 날 자동 보충 — 최근 15영업일 중 비어 있는 날을 모두 조회한다
+    (v2는 실행 1회에 하루치만 받아 7~10월 평일 10일이 비어 있었다)
+ 2. 바뀐 값이 없으면 파일을 쓰지 않는다 — 주말·휴장일의 빈 커밋과 사이트 재배포를 없앤다
+ 3. 종목 이름을 규칙으로 구분한다 — KOC 와 i-KOC 를 섞지 않고, KAU27 같은 새 연물은 자동 추가한다
+ 4. 거래량을 함께 저장한다 — 거래 없이 기준가만 이어진 날을 화면에서 구분한다
+ 5. 환율을 자동 갱신한다 — ECB 기준환율(Frankfurter, 키 불필요)
+ 6. 수동 지표 입력 — GitHub Actions 「Run workflow」 입력칸으로 CORSIA·VCM 등을 휴대폰에서도 갱신한다
+ 7. 시각을 한국시간으로 기록한다 (v2는 UTC 시각에 KST 를 붙였다)
+
+실행
+  자동 수집 : SERVICE_KEY=발급키 python3 fetch_prices.py
+  수동 지표 : MANUAL_SERIES=CORSIA MANUAL_VALUE=12.4 MANUAL_DATE=2026-10-10 \
+              MANUAL_SOURCE="출처" python3 fetch_prices.py --manual
 """
 
 import os
+import re
 import sys
 import json
+import ssl
 import datetime
 import urllib.request
 import urllib.parse
-import ssl
+import urllib.error
+from zoneinfo import ZoneInfo
+
+KST = ZoneInfo("Asia/Seoul")
+HERE = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(HERE, "data", "prices.json")
 
 SERVICE_KEY = os.environ.get("SERVICE_KEY", "").strip()
-DATA_FILE = os.path.join(os.path.dirname(__file__), "data", "prices.json")
-
-# 서비스 URL (확인됨). 배출권 오퍼레이션명은 후보를 자동 시도
 SERVICE_URL = "https://apis.data.go.kr/1160100/service/GetGeneralProductInfoService"
+OP_NAME = "getCertifiedEmissionReductionPriceInfo"   # 공공데이터포털 상세기능에서 확인된 이름
+BACKFILL_WEEKDAYS = 15                               # 최근 15영업일(약 3주)을 매번 점검
+STOP_AFTER_WEEKDAYS = 10                             # 이만큼 안 들어오면 「수집 중단」으로 표시
+UA = {"User-Agent": "carbon-tracker/3.0"}
 
-# 배출권 오퍼레이션명 후보 (명명규칙: getOilPriceInfo/getGoldPriceInfo 형태)
-# 첫 성공 시 그 이름을 사용. 확정되면 이 리스트 맨 앞에 고정하면 됨
-OP_CANDIDATES = [
-    "getCertifiedEmissionReductionPriceInfo",  # ✅ 확정 (공공데이터포털 상세기능에서 확인)
-]
+# 수동 입력을 받는 지표 (자동 수집 원천이 없는 것)
+MANUAL_KEYS = ["CORSIA", "EU_ETS", "UK_ETS", "CN_CEA", "CA_ETS", "RGGI", "VCM"]
 
-# 추적 종목 매핑 (API itmsNm → 대시보드 시리즈 키)
-# 종목 매핑: API가 주는 itmsNm에서 이 키워드를 부분일치로 찾음
-# 실제 종목명이 "KAU25", "배출권-KAU25" 등 어떤 형태든 부분일치로 잡음
-TARGET_ITEMS = {
-    "KAU25": ["KAU25", "KAU 25", "KAU2 5"],   # 할당배출권 (현재 연도물 우선)
-    "KAU26": ["KAU26", "KAU 26"],
-    "KCU25": ["KCU25", "KCU 25"],              # 상쇄배출권
-    "KCU26": ["KCU26"],
-    "KOC":   ["KOC", "i-KOC", "iKOC"],         # 외부사업
-}
+# v2는 종목명 부분일치로 'KOC21-26'을 'KOC' 로 받아 왔다 → 같은 종목이므로 기존 키를 이어 쓴다
+# (에코아이 지속점검이 /series/KOC 를 읽고 있어 키 이름을 바꾸지 않는다)
+LEGACY_KEY = {"KOC21": "KOC"}
+DERIVED = {"KOC_TRD": ("KOC", "KOC 실거래 가중평균 (전 연물)"), "IKOC_TRD": ("IKOC", "i-KOC 실거래 가중평균 (전 연물)")}
 
-SSL_CTX = ssl.create_default_context()
-SSL_CTX.check_hostname = False
-SSL_CTX.verify_mode = ssl.CERT_NONE
+# 새로 생기는 국내 종목의 기본 색
+NEW_COLORS = ["#3b82f6", "#22d3ee", "#a5b4fc", "#38bdf8", "#818cf8", "#06b6d4"]
+
+_UNVERIFIED = ssl.create_default_context()
+_UNVERIFIED.check_hostname = False
+_UNVERIFIED.verify_mode = ssl.CERT_NONE
+_ssl_warned = False
+
+
+# ───────────────────────── 공통 ─────────────────────────
+def now_kst():
+    return datetime.datetime.now(KST)
 
 
 def log(msg):
-    print(f"[{datetime.datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+    print(f"[{now_kst().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def http_get(url, headers=None, timeout=30):
+    """인증서 검증을 먼저 시도하고, data.go.kr 처럼 인증서 체인이 불완전한 곳만 검증 없이 재시도"""
+    global _ssl_warned
+    req = urllib.request.Request(url, headers=headers or UA)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.read().decode("utf-8")
+    except urllib.error.URLError as e:
+        if isinstance(getattr(e, "reason", None), ssl.SSLError):
+            if not _ssl_warned:
+                log("  ℹ️ 인증서 검증 실패 → 검증 없이 재시도 (data.go.kr 인증서 체인 문제)")
+                _ssl_warned = True
+            with urllib.request.urlopen(req, timeout=timeout, context=_UNVERIFIED) as r:
+                return r.read().decode("utf-8")
+        raise
+
+
+def label_of(d):
+    """date → 'yy.mm.dd'"""
+    return d.strftime("%y.%m.%d")
+
+
+def parse_label(s):
+    p = [int(x) for x in s.split(".")]
+    y = p[0] + 2000 if p[0] < 100 else p[0]
+    return datetime.date(y, p[1] if len(p) > 1 else 1, p[2] if len(p) > 2 else 1)
+
+
+def recent_weekdays(n, today):
+    out, d = [], today
+    while len(out) < n:
+        if d.weekday() < 5:
+            out.append(d)
+        d -= datetime.timedelta(days=1)
+    return sorted(out)
+
+
+def weekdays_between(a, b):
+    """a < b 일 때 (a, b] 사이 평일 수"""
+    n, d = 0, a
+    while d < b:
+        d += datetime.timedelta(days=1)
+        if d.weekday() < 5:
+            n += 1
+    return n
+
+
+# ───────────────────────── 파일 ─────────────────────────
 def load_data():
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, encoding="utf-8") as f:
-                d = json.load(f)
-            # series 키가 없으면 초기화 (meta/fx는 있으면 보존)
-            if "series" not in d:
-                d["series"] = {}
-            return d
-        except Exception as e:
-            log(f"⚠️ 기존 데이터 로드 실패: {e}")
-            log("   ⛔ 덮어쓰기를 막기 위해 빈 파일로 시작하지 않습니다.")
-            log("   → data/prices.json 을 완전판으로 복구한 뒤 다시 실행하세요.")
-            # 로드 실패 시 None 반환 → main에서 중단 처리
-            return None
-    log("⚠️ data/prices.json 이 없습니다. 완전판을 먼저 올려주세요.")
-    return None
-
-
-def save_data(data):
-    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    # 무결성 경고: meta/fx가 없으면 대시보드가 렌더링 실패함
-    if "meta" not in data or not data.get("meta"):
-        log("⚠️ 경고: meta(색상·축 정보)가 없습니다. 대시보드 차트가 안 뜰 수 있습니다.")
-    if "fx" not in data or not data.get("fx"):
-        log("⚠️ 경고: fx(환율)가 없습니다. 원화 환산이 안 될 수 있습니다.")
-    log(f"저장 완료: {DATA_FILE} (series {len(data.get('series',{}))}종, meta {len(data.get('meta',{}))}종)")
-
-
-def try_call(op_name, base_date):
-    """특정 오퍼레이션명으로 호출 시도. 성공하면 items 리스트, 실패하면 None"""
-    params = {
-        "serviceKey": SERVICE_KEY,
-        "resultType": "json",
-        "basDt": base_date,
-        "numOfRows": "100",
-        "pageNo": "1",
-    }
-    url = f"{SERVICE_URL}/{op_name}?" + urllib.parse.urlencode(params, safe="")
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "carbon-tracker/2.0"})
-        with urllib.request.urlopen(req, timeout=30, context=SSL_CTX) as resp:
-            raw = resp.read().decode("utf-8")
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            return None  # 오퍼레이션명 틀림
-        log(f"    HTTP {e.code} ({op_name})")
+    if not os.path.exists(DATA_FILE):
+        log("⛔ data/prices.json 이 없습니다. 기존 완전판을 먼저 올려 주세요.")
         return None
+    try:
+        with open(DATA_FILE, encoding="utf-8") as f:
+            d = json.load(f)
     except Exception as e:
-        log(f"    호출 오류 ({op_name}): {e}")
+        log(f"⛔ data/prices.json 을 읽지 못했습니다({e}). 덮어쓰기를 막기 위해 중단합니다.")
         return None
-
-    # JSON 파싱
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        # XML 에러 응답일 수 있음 (키 문제 등)
-        if "SERVICE_KEY" in raw or "SERVICE ERROR" in raw or "인증" in raw:
-            log(f"    ⚠️ 인증 오류 응답 ({op_name}) — SERVICE_KEY 확인 필요")
-        return None
-
-    # 정상 구조 확인
-    try:
-        items = data["response"]["body"]["items"]["item"]
-        if isinstance(items, dict):
-            items = [items]
-        return items
-    except (KeyError, TypeError):
-        # 응답은 왔으나 데이터 없음 (휴장일이거나 구조 다름)
-        header = data.get("response", {}).get("header", {})
-        code = header.get("resultCode", "")
-        if code and code != "00":
-            log(f"    응답코드 {code} ({op_name})")
-        return None
+    d.setdefault("series", {})
+    d.setdefault("meta", {})
+    return d
 
 
-def find_working_op(base_date):
-    """맞는 오퍼레이션명을 자동 탐색. 저장된 것 우선 시도"""
-    # 이전에 찾은 이름이 있으면 우선
-    data = load_data()
-    saved_op = data.get("_op_name") if data else None
-    order = OP_CANDIDATES[:]
-    if saved_op and saved_op in order:
-        order.remove(saved_op)
-        order.insert(0, saved_op)
-    elif saved_op:
-        order.insert(0, saved_op)
-
-    for op in order:
-        items = try_call(op, base_date)
-        if items:
-            log(f"  ✅ 작동하는 오퍼레이션 확인: {op}")
-            return op, items
-    return None, None
+def snapshot(d):
+    return json.dumps({k: v for k, v in d.items() if k != "updated"}, ensure_ascii=False, sort_keys=True)
 
 
+def save_if_changed(data, before):
+    if snapshot(data) == before:
+        log("변경 없음 — 파일을 쓰지 않습니다 (빈 커밋 없음)")
+        return False
+    data["updated"] = now_kst().strftime("%Y-%m-%d %H:%M KST")
+    os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
+    tmp = DATA_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, DATA_FILE)
+    log(f"저장: series {len(data['series'])}종 · {data['updated']}")
+    return True
 
 
-def fetch_global_indicators(data):
-    """
-    글로벌 지표 자동 수집 (best-effort, 실패해도 무방)
-    - EU ETS: oilpriceapi.com 무료 티어 (OILPRICE_KEY 환경변수 필요)
-    - 나머지(VCM/CORSIA/중국 등): 무료 안정 API 부재 → 수동 갱신 유지
-    """
-    oilprice_key = os.environ.get("OILPRICE_KEY", "").strip()
-    today = datetime.date.today().strftime("%y.%m")
+# ───────────────────────── 구조 정리 (매 실행, 여러 번 돌려도 결과 동일) ─────────────────────────
+def migrate(data):
+    meta, series = data["meta"], data["series"]
+    status = data.setdefault("status", {})
+    data.setdefault("volume", {})
 
-    # EU ETS via oilpriceapi (무료 키)
-    if oilprice_key:
-        try:
-            url = "https://api.oilpriceapi.com/v1/prices/latest?by_code=EU_CARBON"
-            req = urllib.request.Request(url, headers={
-                "Authorization": f"Token {oilprice_key}",
-                "Content-Type": "application/json",
-            })
-            with urllib.request.urlopen(req, timeout=20, context=SSL_CTX) as resp:
-                j = json.loads(resp.read().decode("utf-8"))
-            price = j.get("data", {}).get("price")
-            if price:
-                data["series"].setdefault("EU_ETS", {})
-                data["series"]["EU_ETS"][today] = round(float(price), 2)
-                log(f"✅ EU_ETS 자동 수집: €{price} ({today})")
-        except Exception as e:
-            log(f"  EU_ETS 자동 수집 실패 (수동 갱신 유지): {str(e)[:50]}")
-    else:
-        log("  ℹ️ OILPRICE_KEY 미설정 — EU_ETS는 수동 갱신 (선택사항)")
+    # v2에서 수집은 되는데 화면에 안 보이던 KCU26
+    if "KCU26" in series and "KCU26" not in meta:
+        meta["KCU26"] = {"label": "KCU26 (26년물 상쇄)", "cat": "kr", "cur": "KRW",
+                         "color": "#3b5bab", "eco": True, "auto": True}
 
-    # CORSIA: ICE 지연시세 (키 불필요)
-    fetch_corsia_ice(data)
+    # 로컬 사본에만 있고 사이트에 올라가지 않았던 수동 입력 2건 (한 번만 반영)
+    seeds = data.setdefault("_seeded", [])
+    one_off = [
+        ("EU_ETS", "26.08", 83.83, "2026-08-24 수동 입력(로컬 사본) — 출처 기록 없음"),
+        ("CORSIA", "26.08", 12.4, "ICE Futures Europe CORSIA EEU(2024-2026) 선물 — 블로그(빤딱이 26.8.12) 인용, 원문 미확인"),
+    ]
+    for key, lab, val, src in one_off:
+        tag = f"{key}@{lab}"
+        if tag in seeds:
+            continue
+        series.setdefault(key, {})
+        if lab not in series[key]:
+            series[key][lab] = val
+            status[key] = {"mode": "manual", "last": lab, "source": src}
+        seeds.append(tag)
 
-    # 나머지 글로벌 지표는 무료 안정 소스 부재로 수동 유지
-    log("  ℹ️ VCM·중국·캘리포니아·영국·RGGI는 수동 갱신 (유료 API만 존재)")
+    # v3b: 'KOC' 의 정체(KOC21-26) 정리 — 첫 v3 실행이 따로 만든 KOC21 을 KOC 로 합친다
+    if "koc_split_v3b" not in seeds:
+        for part in ("series", "volume"):
+            src = data.get(part, {}).pop("KOC21", None)
+            if src:
+                data[part].setdefault("KOC", {}).update(src)
+        meta.pop("KOC21", None)
+        status.pop("KOC21", None)
+        if "KOC" in meta:
+            meta["KOC"].update({"label": "KOC21-26 (구 'KOC' 시리즈)", "eco": False, "emph": False, "vintage": True})
+            status.setdefault("KOC", {})["note"] = ("v2는 종목명 부분일치로 KOC21-26 을 'KOC'로 받아 왔음 — 거래가 거의 없어 기준가가 이어진 값이 대부분. "
+                                                    "26.03·26.06 월값은 v2 이전 수동 입력(연물 불명)")
+        seeds.append("koc_split_v3b")
+    for key, m in meta.items():
+        if m.get("cat") == "kr" and key not in DERIVED and "vintage" not in m:
+            m["vintage"] = is_vintage(key)
+        if m.get("vintage"):
+            m["eco"] = False
+
+    # 상태표 초기화 — 수동 지표는 기존 meta.asof·note 를 출처로 옮긴다
+    for key, m in meta.items():
+        s = series.get(key) or {}
+        last = max(s, key=parse_label) if s else None
+        st = status.setdefault(key, {})
+        if m.get("auto"):
+            st.setdefault("mode", "auto")
+        else:
+            st["mode"] = "manual"
+            st.setdefault("source", m.get("asof") or "기존 대표값(출처는 note 참조)")
+        if last:
+            st["last"] = max(last, st.get("last") or last, key=parse_label)
+
+    data["note"] = ("KAU·KCU·KOC 는 공공데이터포털 일반상품시세(KRX 배출권시장)에서 평일 하루 두 번 자동 수집하고 빠진 날을 보충한다. "
+                    "환율은 ECB 기준환율(Frankfurter) 자동. CORSIA·VCM·EU·영국·중국·캘리포니아·RGGI 는 무료 공개 원천이 없어 "
+                    "GitHub Actions 「Run workflow」로 값·날짜·출처를 입력한다(status.<지표>.source 에 출처 보관). "
+                    "거래량 0 인 날은 거래 없이 기준가가 이어진 값이다.")
     return data
 
 
-# CORSIA: ICE 'CORSIA Eligible Emissions Units (2024-2026) Futures' 일일 시세 (USD/t, 무료 지연시세)
-# - 키 불필요. 실패해도 기존 값 유지 (best-effort)
-# - ICE 공개 웹페이지가 쓰는 JSON 경로를 사용. 경로가 바뀌면 로그에 실패 원인이 남는다
-ICE_CORSIA_PRODUCT_ID = "83046673"
-ICE_CORSIA_PAGE = ("https://www.ice.com/products/83046673/"
-                   "CORSIA-Eligible-Emissions-Units-2024-2026-Futures/data")
-CORSIA_SANE_RANGE = (1.0, 200.0)   # USD/t. 이 범위 밖이면 오수집으로 보고 버림
-
-
-def _get(url, as_json=True):
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (carbon-tracker)",
-        "Accept": "application/json, text/html;q=0.9",
-        "Referer": ICE_CORSIA_PAGE,
-    })
-    with urllib.request.urlopen(req, timeout=30, context=SSL_CTX) as resp:
-        raw = resp.read().decode("utf-8", "replace")
-    return json.loads(raw) if as_json else raw
-
-
-def _pick_contract(contracts):
-    """가격이 있는 계약 중 가장 가까운 만기물(근월물) 선택"""
-    priced = []
-    for c in contracts:
-        price = c.get("lastPrice")
-        if price in (None, "", 0):
-            price = c.get("settlementPrice") or c.get("settlement")
-        try:
-            price = float(str(price).replace(",", ""))
-        except (TypeError, ValueError):
-            continue
-        priced.append((c, price))
-    return priced[0] if priced else (None, None)
-
-
-def fetch_corsia_ice(data):
-    """ICE CORSIA 선물 근월물 가격을 series['CORSIA'][yy.mm.dd]에 기록. 성공 시 True"""
+# ───────────────────────── KRX 배출권 (공공데이터포털) ─────────────────────────
+def krx_call(day):
+    """그 날짜의 종목 목록. 데이터 없음 → [], 호출 실패 → None"""
+    params = {"serviceKey": SERVICE_KEY, "resultType": "json", "basDt": day.strftime("%Y%m%d"),
+              "numOfRows": "100", "pageNo": "1"}
+    url = f"{SERVICE_URL}/{OP_NAME}?" + urllib.parse.urlencode(params, safe="")
     try:
-        page = _get(ICE_CORSIA_PAGE, as_json=False)
-        import re
-        hubs = re.findall(r'hubId["\'=:\s]+(\d+)', page)
-        if not hubs:
-            log("  CORSIA(ICE): 상품 페이지에서 hubId를 찾지 못함 — 수동 값 유지")
-            return False
-        hub = hubs[0]
-        contracts = None
-        for url in (
-            f"https://www.ice.com/marketdata/api/productguide/charting/contract-data"
-            f"?productId={ICE_CORSIA_PRODUCT_ID}&hubId={hub}",
-            f"https://www.ice.com/marketdata/DelayedMarkets.shtml?getContractsAsJson="
-            f"&productId={ICE_CORSIA_PRODUCT_ID}&hubId={hub}",
-        ):
-            try:
-                j = _get(url)
-            except Exception as e:
-                log(f"    CORSIA(ICE) 경로 실패: {str(e)[:60]}")
-                continue
-            if isinstance(j, list) and j:
-                contracts = j
-                break
-        if not contracts:
-            log("  CORSIA(ICE): 계약 목록이 비어 있음 — 수동 값 유지")
-            return False
+        raw = http_get(url)
+    except Exception as e:
+        log(f"  {day} 호출 실패: {str(e)[:80]}")
+        return None
+    try:
+        j = json.loads(raw)
+    except json.JSONDecodeError:
+        if "SERVICE_KEY" in raw or "SERVICE ERROR" in raw or "인증" in raw:
+            log("  ⚠️ 인증 오류 — GitHub Secrets 의 SERVICE_KEY 확인 필요")
+        else:
+            log(f"  {day} 응답 형식 오류: {raw[:80]}")
+        return None
+    body = (j.get("response") or {}).get("body") or {}
+    items = (body.get("items") or {}).get("item") if isinstance(body.get("items"), dict) else None
+    if not items:
+        code = ((j.get("response") or {}).get("header") or {}).get("resultCode", "")
+        if code and code != "00":
+            log(f"  {day} 응답코드 {code}")
+        return []
+    return [items] if isinstance(items, dict) else items
 
-        c, price = _pick_contract(contracts)
-        if c is None:
-            log("  CORSIA(ICE): 가격이 있는 계약 없음 — 수동 값 유지")
-            return False
-        lo, hi = CORSIA_SANE_RANGE
-        if not lo <= price <= hi:
-            log(f"  CORSIA(ICE): 비정상 가격 {price} — 버림")
-            return False
 
-        # 가격 시각(lastTime) 기준 날짜, 없으면 전일(다른 국내 종목과 같은 '전일 종가' 기준)
-        when = None
-        for key in ("lastTime", "lastUpdateTime", "endDate"):
-            s = str(c.get(key) or "")
-            for fmt in ("%m/%d/%Y %I:%M %p", "%m/%d/%Y", "%a %b %d %H:%M:%S %Z %Y"):
-                try:
-                    when = datetime.datetime.strptime(s.strip(), fmt).date()
-                    break
-                except ValueError:
-                    pass
-            if when and key != "endDate":
-                break
-            when = None
-        if when is None:
-            when = datetime.date.today() - datetime.timedelta(days=1)
-        label = when.strftime("%y.%m.%d")
+def classify(name):
+    """KRX 종목명 → 시리즈 키. 국제(i-) 종목과 국내 종목을 섞지 않는다."""
+    n = re.sub(r"\s+", "", str(name)).upper()
+    intl = re.search(r"(^|[^A-Z])I-?(KCU|KOC)", n) is not None
+    m = re.search(r"(KAU|KCU|KOC)[-_]?(\d{2})(?!\d)", n)
+    if intl:
+        kind = "IKCU" if "KCU" in n else "IKOC"
+        return kind + (m.group(2) if m else "")
+    if m:
+        key = m.group(1) + m.group(2)
+        return LEGACY_KEY.get(key, key)
+    if "KOC" in n:
+        return "KOC"
+    if "KAU" in n or "KCU" in n:
+        return None   # 연물 표시 없는 KAU/KCU 는 어느 해인지 몰라 받지 않는다
+    return None
 
-        data["series"].setdefault("CORSIA", {})[label] = round(price, 2)
-        meta = data.setdefault("meta", {}).setdefault("CORSIA", {})
-        meta["auto"] = True
-        data.setdefault("sources", {})["CORSIA"] = {
-            "src": "ICE CORSIA Eligible Emissions Units (2024-2026) Futures, 근월물 지연시세",
-            "contract": c.get("marketStrip") or c.get("marketId"),
-            "since": data.get("sources", {}).get("CORSIA", {}).get("since", label),
-        }
-        log(f"✅ CORSIA 자동 수집: ${price} ({label}, {c.get('marketStrip', '')})")
+
+def to_num(x):
+    try:
+        return float(str(x).replace(",", ""))
+    except (TypeError, ValueError):
+        return None
+
+
+def is_vintage(key):
+    """화면 기본에서 접어 둘 세부 연물: KOC·i-KOC·i-KCU 연물 전부, 올해보다 뒤 연물의 KAU·KCU"""
+    m = re.fullmatch(r"(KAU|KCU|KOC|IKOC|IKCU)(\d{2})", key)
+    if not m:
+        return key == "KOC"
+    if m.group(1) in ("KOC", "IKOC", "IKCU"):
+        return True
+    return int(m.group(2)) > now_kst().year % 100
+
+
+def ensure_meta(data, key):
+    meta = data["meta"]
+    if key in meta:
+        return
+    m = re.fullmatch(r"(KAU|KCU|KOC|IKOC|IKCU)(\d{2})?", key)
+    kind, yy = (m.group(1), m.group(2)) if m else (key, None)
+    names = {"KAU": "할당", "KCU": "상쇄", "KOC": "외부사업", "IKOC": "국제 외부사업", "IKCU": "국제 상쇄"}
+    shown = {"IKOC": "i-KOC", "IKCU": "i-KCU"}.get(kind, kind)
+    label = f"{shown}{yy or ''} ({'20' + yy + '년물 ' if yy else ''}{names.get(kind, '')})"
+    color = NEW_COLORS[len([k for k in meta if meta[k].get('cat') == 'kr']) % len(NEW_COLORS)]
+    meta[key] = {"label": label, "cat": "kr", "cur": "KRW", "color": color,
+                 "eco": False, "auto": True, "vintage": is_vintage(key)}
+    log(f"  ➕ 새 종목 추가: {key} ({label})")
+
+
+def apply_krx_day(data, day, items):
+    """하루치 응답을 시리즈에 반영. 반영한 키 목록을 돌려준다."""
+    lab = label_of(day)
+    groups = {}
+    for it in items:
+        name = str(it.get("itmsNm", "")).strip()
+        key = classify(name)
+        close = to_num(it.get("clpr") or it.get("basPrc") or it.get("trdPrc"))
+        if not key or close is None or close <= 0:
+            continue
+        groups.setdefault(key, []).append((name, close, to_num(it.get("trqu"))))
+    done = []
+    for key, rows in groups.items():
+        note = ""
+        if len({r[0] for r in rows}) > 1:
+            exact = [r for r in rows if re.sub(r"\s+", "", r[0]).upper() == key]
+            rows = exact or rows
+            note = "같은 분류에 종목명이 여럿: " + ", ".join(sorted({r[0] for r in groups[key]})) + f" → '{rows[0][0]}' 사용"
+            log(f"  ⚠️ {key}: {note}")
+        name, close, vol = rows[0]
+        ensure_meta(data, key)
+        data["series"].setdefault(key, {})[lab] = close
+        if vol is not None:
+            data["volume"].setdefault(key, {})[lab] = int(vol)
+        st = data["status"].setdefault(key, {})
+        st.update({"mode": "auto", "name": name, "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)"})
+        st["last"] = max(lab, st.get("last") or lab, key=parse_label)
+        if note:
+            st["note"] = note
+        else:
+            st.pop("note", None)
+        done.append(key)
+    if groups:
+        data["krx_names"] = {"date": lab, "names": sorted({str(it.get('itmsNm', '')).strip() for it in items})}
+    return done
+
+
+def fetch_krx(data, today=None, caller=krx_call):
+    if not SERVICE_KEY and caller is krx_call:
+        log("⚠️ SERVICE_KEY 미설정 — GitHub Secrets 에 SERVICE_KEY 를 등록하세요. KRX 수집을 건너뜁니다.")
+        return 0
+    today = today or now_kst().date()
+    done_set = set(data.get("krx_done") or [])
+    window = recent_weekdays(BACKFILL_WEEKDAYS, today)
+    deep = not done_set
+    if deep:   # 처음 1회: 일별 기록이 시작된 날부터 모든 평일을 전 종목으로 다시 받는다
+        start = datetime.date(2026, 6, 30)
+        window = [start + datetime.timedelta(days=i) for i in range((today - start).days + 1)]
+        window = [d for d in window if d.weekday() < 5]
+    todo = [d for d in window if label_of(d) not in done_set]
+    log(f"KRX: {'전 종목 전체 재수집 — ' if deep else ''}최근 {len(window)}영업일 중 안 받은 날 {len(todo)}일 조회")
+    filled, answered = 0, 0
+    for d in todo:
+        items = caller(d)
+        if items is not None:
+            answered += 1
+        if not items:
+            continue
+        keys = apply_krx_day(data, d, items)
+        if keys:
+            done_set.add(label_of(d))
+            filled += 1
+            main = [k for k in sorted(keys) if not data["meta"].get(k, {}).get("vintage")]
+            log(f"  ✅ {label_of(d)}: {len(keys)}종목 · " + ", ".join(f"{k} {data['series'][k][label_of(d)]:,.0f}" for k in main))
+    data["krx_done"] = sorted(done_set, key=parse_label)
+    mark_stopped(data)
+    compute_traded(data)
+    log(f"KRX: {filled}일 새로 채움")
+    return filled
+
+
+def mark_stopped(data):
+    """다른 종목은 들어오는데 이 종목만 오래 안 들어오면 「수집 중단」으로 표시"""
+    kr = [k for k, m in data["meta"].items() if m.get("auto") and m.get("cat") == "kr" and k not in DERIVED]
+    lasts = {}
+    for k in kr:
+        daily = [l for l in (data["series"].get(k) or {}) if l.count(".") == 2]
+        if daily:
+            lasts[k] = max(daily, key=parse_label)
+    if not lasts:
+        return
+    newest = max(lasts.values(), key=parse_label)
+    for k, l in lasts.items():
+        st = data["status"].setdefault(k, {})
+        gap = weekdays_between(parse_label(l), parse_label(newest))
+        if gap > STOP_AFTER_WEEKDAYS:
+            st["mode"] = "stopped"
+            st["note"] = f"{l} 이후 API 응답에 이 종목이 없음"
+        elif st.get("mode") == "stopped":
+            st["mode"] = "auto"
+            st.pop("note", None)
+
+
+def compute_traded(data):
+    """연물별 종가 × 거래량으로 실거래 가중평균을 만든다 (거래가 있었던 날만). 매번 처음부터 다시 계산."""
+    for dkey, (kind, label) in DERIVED.items():
+        members = [k for k in data["series"]
+                   if (k == "KOC" and kind == "KOC") or re.fullmatch(kind + r"\d{2}", k)]
+        acc = {}
+        for k in members:
+            vols = data["volume"].get(k) or {}
+            for lab, v in vols.items():
+                p = (data["series"].get(k) or {}).get(lab)
+                if v and p:
+                    a = acc.setdefault(lab, [0.0, 0])
+                    a[0] += p * v
+                    a[1] += v
+        if not acc:
+            continue
+        data["series"][dkey] = {lab: round(a[0] / a[1]) for lab, a in sorted(acc.items(), key=lambda x: parse_label(x[0]))}
+        data["volume"][dkey] = {lab: a[1] for lab, a in sorted(acc.items(), key=lambda x: parse_label(x[0]))}
+        data["meta"].setdefault(dkey, {"label": label, "cat": "kr", "cur": "KRW", "color": "#d95926",
+                                       "eco": True, "emph": True, "auto": True, "derived": True})
+        last = max(acc, key=parse_label)
+        data["status"][dkey] = {"mode": "auto", "last": last,
+                                "source": f"{kind} 연물별 종가×거래량 가중평균 — 거래가 있었던 날만 점이 찍힘"}
+
+
+# ───────────────────────── 환율 (ECB 기준, 키 불필요) ─────────────────────────
+FX_URLS = [
+    "https://api.frankfurter.dev/v1/latest?base=KRW&symbols=USD,EUR,GBP,CNY",
+    "https://api.frankfurter.app/latest?from=KRW&to=USD,EUR,GBP,CNY",
+]
+
+
+def fetch_fx(data, getter=http_get):
+    for url in FX_URLS:
+        try:
+            j = json.loads(getter(url, UA, 20))
+            rates = j.get("rates") or {}
+            fx = {c: round(1 / rates[c]) for c in ("USD", "EUR", "GBP", "CNY") if rates.get(c)}
+            if not (900 <= fx.get("USD", 0) <= 2500):
+                raise ValueError(f"USD/KRW 범위 이상: {fx.get('USD')}")
+            data["fx"] = fx
+            data["fx_asof"] = f"{j.get('date')} ECB 기준환율(Frankfurter)"
+            log(f"✅ 환율 {j.get('date')}: " + ", ".join(f"{c} {v:,}" for c, v in fx.items()))
+            return True
+        except Exception as e:
+            log(f"  환율 실패({url.split('/')[2]}): {str(e)[:60]}")
+    log("  환율: 기존 값 유지")
+    return False
+
+
+# ───────────────────────── EU ETS (선택: 무료 키가 있으면 자동) ─────────────────────────
+def fetch_eu(data, getter=http_get):
+    key = os.environ.get("OILPRICE_KEY", "").strip()
+    if not key:
+        log("  ℹ️ OILPRICE_KEY 없음 — EU ETS 는 수동 입력")
+        return False
+    try:
+        j = json.loads(getter("https://api.oilpriceapi.com/v1/prices/latest?by_code=EU_CARBON",
+                              {"Authorization": f"Token {key}", "Content-Type": "application/json"}, 20))
+        price = (j.get("data") or {}).get("price")
+        created = (j.get("data") or {}).get("created_at", "")[:10]
+        if not price:
+            raise ValueError("가격 없음")
+        d = datetime.date.fromisoformat(created) if created else now_kst().date()
+        lab = label_of(d)
+        data["series"].setdefault("EU_ETS", {})[lab] = round(float(price), 2)
+        data["meta"]["EU_ETS"]["auto"] = True
+        data["status"]["EU_ETS"] = {"mode": "auto", "last": lab, "source": "OilPriceAPI EU_CARBON (ICE EUA 선물)"}
+        log(f"✅ EU ETS {lab}: €{price}")
         return True
     except Exception as e:
-        log(f"  CORSIA(ICE) 자동 수집 실패 (수동 값 유지): {str(e)[:80]}")
+        log(f"  EU ETS 자동 실패(기존 값 유지): {str(e)[:60]}")
         return False
 
 
-def parse_items(items):
-    """API 응답에서 종목명:종가 추출"""
-    result = {}
-    for it in items:
-        name = str(it.get("itmsNm", "")).strip()
-        # 종가 필드는 clpr(종가) 우선, 없으면 다른 필드
-        close = it.get("clpr") or it.get("basPrc") or it.get("trdPrc") or ""
-        if name and close:
-            try:
-                result[name] = float(str(close).replace(",", ""))
-            except ValueError:
-                pass
-    return result
+# ───────────────────────── 수동 입력 ─────────────────────────
+def manual_update(data):
+    key = os.environ.get("MANUAL_SERIES", "").strip()
+    val = to_num(os.environ.get("MANUAL_VALUE", ""))
+    date = os.environ.get("MANUAL_DATE", "").strip()
+    src = os.environ.get("MANUAL_SOURCE", "").strip()
+    if key not in MANUAL_KEYS:
+        raise SystemExit(f"⛔ 지표 이름 오류: '{key}' (가능: {', '.join(MANUAL_KEYS)})")
+    if val is None or val <= 0:
+        raise SystemExit(f"⛔ 값 오류: '{os.environ.get('MANUAL_VALUE')}' — 숫자만 입력 (원통화 기준, 예: 12.4)")
+    if not src:
+        raise SystemExit("⛔ 출처를 비워 둘 수 없습니다")
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+        d = datetime.date.fromisoformat(date)
+        lab = label_of(d)
+    elif re.fullmatch(r"\d{4}-\d{2}", date):
+        d = datetime.date.fromisoformat(date + "-01")
+        lab = d.strftime("%y.%m")
+    else:
+        raise SystemExit(f"⛔ 날짜 오류: '{date}' — 2026-10-10 또는 2026-10 형식")
+    if d > now_kst().date():
+        raise SystemExit("⛔ 미래 날짜는 입력할 수 없습니다")
+    old = (data["series"].get(key) or {}).get(lab)
+    data["series"].setdefault(key, {})[lab] = val
+    data["meta"].setdefault(key, {})["asof"] = date
+    st = data["status"].setdefault(key, {})
+    st.update({"mode": "manual", "source": src})
+    st["last"] = max(lab, st.get("last") or lab, key=parse_label)
+    cur = data["meta"][key].get("cur", "")
+    log(f"✅ 수동 입력 {key} {lab} = {val} {cur}" + (f" (기존 {old} → 교체)" if old is not None else "") + f" · 출처: {src}")
 
 
-def map_to_series(raw_items):
-    mapped = {}
-    for series_key, candidates in TARGET_ITEMS.items():
-        for cand in candidates:
-            if cand in raw_items:
-                mapped[series_key] = raw_items[cand]
-                break
-            for name, price in raw_items.items():
-                if cand in name:
-                    mapped[series_key] = price
-                    break
-            if series_key in mapped:
-                break
-    return mapped
-
-
-def recent_business_dates():
-    today = datetime.date.today()
-    out = []
-    d = today
-    for _ in range(10):
-        d = d - datetime.timedelta(days=1)
-        if d.weekday() < 5:
-            out.append(d.strftime("%Y%m%d"))
-    return out
-
-
-def main():
-    log("=== 탄소배출권 가격 수집 시작 (v2) ===")
-
-    if not SERVICE_KEY:
-        log("⚠️ SERVICE_KEY 미설정 — GitHub Secrets에 SERVICE_KEY를 등록하세요")
-        log("   기존 데이터를 유지하고 종료합니다")
-        data = load_data()
-        if data is None:
-            log("⛔ 기존 데이터를 읽을 수 없어 중단합니다 (덮어쓰기 방지)")
-            sys.exit(1)
-        data["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S KST") + " (키없음)"
-        save_data(data)
-        return
-
+# ───────────────────────── 실행 ─────────────────────────
+def main(argv):
+    log("=== 탄소배출권 가격 수집 v3 ===")
     data = load_data()
     if data is None:
-        log("⛔ 기존 데이터를 읽을 수 없어 중단합니다 (덮어쓰기 방지)")
-        log("   data/prices.json 완전판(meta·fx·과거시계열 포함)을 올린 뒤 재실행하세요")
         sys.exit(1)
-    got_any = False
-
-    for base_date in recent_business_dates():
-        op, items = find_working_op(base_date)
-        if not op:
-            continue  # 이 날짜는 데이터 없음, 다음 날짜 시도
-        raw = parse_items(items)
-        if not raw:
-            log(f"  {base_date}: 응답은 왔으나 종목 없음")
-            continue
-        log(f"  {base_date}: {len(raw)}개 종목 — {', '.join(list(raw.keys())[:8])}")
-        mapped = map_to_series(raw)
-        if mapped:
-            label = datetime.datetime.strptime(base_date, "%Y%m%d").strftime("%y.%m.%d")
-            for key, price in mapped.items():
-                data["series"].setdefault(key, {})
-                data["series"][key][label] = price
-            data["_op_name"] = op  # 다음 실행 위해 저장
-            log(f"✅ {label} 기준 갱신: {mapped}")
-            got_any = True
-            break
-        else:
-            log(f"  {base_date}: KAU/KCU/KOC 종목 매칭 실패. 원시 종목명 확인: {list(raw.keys())}")
-
-    if not got_any:
-        log("⚠️ 배출권 데이터 미확보")
-        log("   가능한 원인: (1) 모든 오퍼레이션 후보가 404 → 이름 재확인 필요")
-        log("              (2) SERVICE_KEY 미승인 (data.go.kr 마이페이지에서 확인)")
-        log("              (3) 연휴/휴장 구간")
-
-    # 글로벌 지표 수집 (best-effort)
-    data = fetch_global_indicators(data)
-
-    data["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S KST")
-    save_data(data)
-    log("=== 수집 완료 ===")
-
-    for key, series in data.get("series", {}).items():
-        if series and isinstance(series, dict):
-            latest = sorted(series.keys())[-1]
-            log(f"  {key}: {series[latest]:,.0f} ({latest}), 누적 {len(series)}개")
+    before = snapshot(data)
+    migrate(data)
+    if "--manual" in argv:
+        manual_update(data)
+    else:
+        fetch_krx(data)
+        fetch_fx(data)
+        fetch_eu(data)
+    changed = save_if_changed(data, before)
+    for k in data["meta"]:
+        s = data["series"].get(k) or {}
+        if s:
+            last = max(s, key=parse_label)
+            mode = (data.get("status", {}).get(k) or {}).get("mode", "?")
+            log(f"  {k:7s} {s[last]:>10,.2f}  ({last}, {mode})")
+    log("=== 끝 ===" + (" (저장함)" if changed else " (변경 없음)"))
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

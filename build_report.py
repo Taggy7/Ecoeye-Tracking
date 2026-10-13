@@ -1,298 +1,306 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-에코아이 투자분석용 탄소배출권 요약본 생성기
-- data/prices.json (fetch_prices.py가 갱신)을 읽어 보고서에 바로 붙일 수 있는 요약을 만든다.
-- 출력
-    data/report_digest.md    사람이 읽는 요약 (보고서·LLM에 그대로 전달)
-    data/report_digest.json  기계가 읽는 요약 (분석 파이프라인용)
-- 새로 만들어내는 수치 없음: 전부 prices.json 값의 변화율·환산·비율 계산이다.
-  수동 갱신 지표(auto=false)는 분기 대표값이라 일간 변동 해석에 쓰지 않도록 표시한다.
+"""Read-only v3 price digest. No network, no changes to prices.json.
 
-실행: python3 build_report.py [--today YYYY-MM-DD]
+Returns distinguish published/reference-price changes from confirmed-trade changes.
+Weighted prices are vintage closing prices times volume, not transaction-level VWAP.
+Monthly labels denote an interval; their exact observation day is unknown.
 """
-
-import os
-import sys
+import argparse
+import calendar
+import datetime as dt
+import hashlib
 import json
-import datetime
+import math
+import re
+from pathlib import Path
+from zoneinfo import ZoneInfo
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-SRC = os.path.join(ROOT, "data", "prices.json")
-OUT_MD = os.path.join(ROOT, "data", "report_digest.md")
-OUT_JSON = os.path.join(ROOT, "data", "report_digest.json")
-
-# 판정 기준 (보고서 검토용 알림 임계값)
-BIG_MOVE_1M = 0.10        # 1개월 변동 ±10% 이상
-BIG_MOVE_1D = 0.03        # 직전 관측 대비 ±3% 이상
-STALE_AUTO_DAYS = 7       # 자동 수집 지표가 이보다 오래 갱신 안 되면 경고
-STALE_MANUAL_DAYS = 120   # 수동 지표가 이보다 오래되면 경고
-FLAT_RUN_WARN = 10        # 같은 값이 연속 N회 이상이면 '무거래/미갱신 의심'
-
+ROOT = Path(__file__).resolve().parent
 WINDOWS = [("1주", 7), ("1개월", 30), ("3개월", 91), ("6개월", 182), ("1년", 365)]
+WEIGHTED = {"KOC_TRD": "KOC", "IKOC_TRD": "IKOC"}
 
 
-def parse_label(label):
-    """'26.10.07' → 2026-10-07 / '26.09' → 2026-09-30(월말, 분기·월 대표값)"""
-    parts = label.split(".")
-    yy, mm = int(parts[0]) + 2000, int(parts[1])
-    if len(parts) >= 3:
-        return datetime.date(yy, mm, int(parts[2]))
-    nxt = datetime.date(yy + (mm == 12), mm % 12 + 1, 1)
-    return nxt - datetime.timedelta(days=1)
-
-
-def points(series):
-    """[(date, value)] 날짜순. 같은 날짜가 겹치면 일간(yy.mm.dd) 값을 우선."""
-    by_date = {}
-    for label, v in series.items():
-        try:
-            d = parse_label(label)
-        except (ValueError, IndexError):
-            continue
-        if v is None:
-            continue
-        daily = label.count(".") >= 2
-        if d not in by_date or daily:
-            by_date[d] = float(v)
-    return sorted(by_date.items())
-
-
-def value_at_or_before(pts, target):
-    prev = None
-    for d, v in pts:
-        if d <= target:
-            prev = (d, v)
-        else:
-            break
-    return prev
-
-
-def pct(new, old):
-    return None if not old else new / old - 1
-
-
-def meta_for(key, meta):
-    """meta에 없는 연도물(KAU26·KCU26 등)은 같은 계열(KCU25)의 meta를 따른다."""
-    if key in meta:
-        return meta[key]
-    base = key.rstrip("0123456789")
-    for k, m in meta.items():
-        if k.rstrip("0123456789") == base:
-            return dict(m, label=key)
-    return {}
-
-
-def analyze(key, meta, series, fx, today, source=None):
-    pts = points(series)
-    if not pts:
+def number(value):
+    if value is None or isinstance(value, bool):
         return None
-    # 수집 원천이 바뀐 지표(예: CORSIA 수동 대표값 → ICE 선물)는 바뀐 날 이후만 비교한다
-    since = (source or {}).get("since")
-    if since:
-        cut = parse_label(since)
-        newer = [p for p in pts if p[0] >= cut]
-        if newer:
-            pts = newer
-    last_d, last_v = pts[-1]
-    cur = meta.get("cur", "KRW")
-    rate = 1.0 if cur == "KRW" else fx.get(cur)
-    out = {
-        "key": key,
-        "label": meta.get("label", key),
-        "cur": cur,
-        "auto": bool(meta.get("auto")),
-        "eco": bool(meta.get("eco")),
-        "emph": bool(meta.get("emph")),
-        "last_date": last_d.isoformat(),
-        "last": last_v,
-        "last_krw": round(last_v * rate) if rate else None,
-        "age_days": (today - last_d).days,
-        "n_points": len(pts),
-        "changes": {},
-        "source": (source or {}).get("src"),
-        "source_since": parse_label(since).isoformat() if since else None,
-        "alerts": [],
-    }
+    try:
+        value = float(value)
+        return value if math.isfinite(value) else None
+    except (ValueError, TypeError):
+        return None
 
-    if len(pts) >= 2:
-        out["changes"]["직전관측"] = pct(last_v, pts[-2][1])
-        out["prev_date"] = pts[-2][0].isoformat()
+
+def period(label):
+    parts = [int(p) for p in label.replace('-', '.').split('.')]
+    if len(parts) not in (2, 3):
+        raise ValueError(label)
+    y, m = parts[:2]
+    y = y + 2000 if y < 100 else y
+    start = dt.date(y, m, parts[2] if len(parts) == 3 else 1)
+    end = start if len(parts) == 3 else dt.date(y, m, calendar.monthrange(y, m)[1])
+    return start, end, 'day' if len(parts) == 3 else 'month'
+
+
+def observations(series, volumes, today):
+    out, excluded = [], []
+    for label, raw in series.items():
+        try:
+            start, end, precision = period(label)
+        except (ValueError, TypeError):
+            excluded.append({'label': label, 'reason': 'invalid_date'})
+            continue
+        price = number(raw)
+        if price is None or price <= 0:
+            excluded.append({'label': label, 'reason': 'invalid_price'})
+            continue
+        # A month is usable only when its whole interval has elapsed.
+        if end > today:
+            excluded.append({'label': label, 'reason': 'future_or_incomplete_period'})
+            continue
+        volume = number(volumes.get(label))
+        if volume is not None and volume < 0:
+            excluded.append({'label': label, 'reason': 'invalid_volume'})
+            volume = None
+        out.append({'label': label, 'period_start': start.isoformat(),
+                    'period_end': end.isoformat(), 'precision': precision,
+                    'price': price, 'volume': volume})
+    return sorted(out, key=lambda p: (p['period_end'], p['precision'] == 'day', p['label'])), excluded
+
+
+def change(new, old):
+    return new / old - 1 if old else None
+
+
+def returns(pts, manual=False):
+    values = {name: None for name, _ in WINDOWS}
+    values['직전관측'] = None
+    bases = {}
+    if not pts:
+        return values, bases
+    last = pts[-1]
+    end = dt.date.fromisoformat(last['period_end'])
+    if len(pts) > 1 and last['precision'] == pts[-2]['precision'] == 'day':
+        values['직전관측'] = change(last['price'], pts[-2]['price'])
+        bases['직전관측'] = {'from': pts[-2]['label'], 'to': last['label'], 'from_price': pts[-2]['price'], 'to_price': last['price']}
     for name, days in WINDOWS:
-        ref = value_at_or_before(pts, last_d - datetime.timedelta(days=days))
-        out["changes"][name] = pct(last_v, ref[1]) if ref else None
-        # 수동(분기 대표값) 지표는 3개월 미만 창이 의미 없음
-        if not out["auto"] and days < 90:
-            out["changes"][name] = None
-    if not out["auto"]:
-        out["changes"]["직전관측"] = out["changes"].get("직전관측")  # 직전 분기 대비로 해석
-
-    # 최근 1년 구간 고저 (데이터가 1년 미만이면 보유 전체 기간)
-    yr = [v for d, v in pts if d >= last_d - datetime.timedelta(days=365)]
-    hi, lo = max(yr), min(yr)
-    out["range_1y"] = {"high": hi, "low": lo,
-                       "pos": None if hi == lo else (last_v - lo) / (hi - lo),
-                       "covers_full_year": pts[0][0] <= last_d - datetime.timedelta(days=365)}
-
-    # 동일가 연속 횟수 (최신부터 거슬러)
-    run = 1
-    for i in range(len(pts) - 2, -1, -1):
-        if pts[i][1] == last_v:
-            run += 1
-        else:
-            break
-    out["flat_run"] = run
-
-    # 알림
-    limit = STALE_AUTO_DAYS if out["auto"] else STALE_MANUAL_DAYS
-    if out["age_days"] > limit:
-        kind = "자동수집" if out["auto"] else "수동갱신"
-        out["alerts"].append(f"최신값이 {out['age_days']}일 전({out['last_date']}) — {kind} 지표 갱신 지연")
-    if run >= FLAT_RUN_WARN and out["auto"]:
-        out["alerts"].append(f"같은 가격이 {run}회 연속 — 거래 부재 또는 API 미갱신 가능성(원천 확인 필요)")
-    c1m = out["changes"].get("1개월")
-    if out["auto"] and c1m is not None and abs(c1m) >= BIG_MOVE_1M:
-        out["alerts"].append(f"1개월 {c1m:+.1%} 변동")
-    c1 = out["changes"].get("직전관측")
-    if out["auto"] and c1 is not None and abs(c1) >= BIG_MOVE_1D:
-        out["alerts"].append(f"직전 관측 대비 {c1:+.1%}")
-    if out["auto"] and len(yr) >= 20:
-        if last_v >= hi and lo != hi:
-            out["alerts"].append("보유기간 내 신고가")
-        elif last_v <= lo and lo != hi:
-            out["alerts"].append("보유기간 내 신저가")
-    return out
+        target = end - dt.timedelta(days=days)
+        candidates = [p for p in pts[:-1] if dt.date.fromisoformat(p['period_end']) <= target]
+        if manual or last['precision'] != 'day' or not candidates:
+            continue
+        base = candidates[-1]
+        lag = (target - dt.date.fromisoformat(base['period_end'])).days
+        bases[name] = {'from': base['label'], 'to': last['label'],
+                       'target': target.isoformat(), 'baseline_lag_days': lag, 'from_price': base['price'], 'to_price': last['price']}
+        # Do not call a months-old quote a one-week or one-month comparison.
+        if base['precision'] == 'day' and lag <= 7:
+            values[name] = change(last['price'], base['price'])
+    return values, bases
 
 
-def derived(res):
-    """KRW 환산 기준 파생 지표 (둘 다 있을 때만)."""
-    d = []
-
-    def g(k):
-        return res.get(k)
-
-    kau26, kau25, koc, kcu = g("KAU26"), g("KAU25"), g("KOC"), g("KCU26") or g("KCU25")
-    eua, corsia, vcm = g("EU_ETS"), g("CORSIA"), g("VCM")
-
-    def add(name, a, b, note):
-        if a and b and a["last_krw"] and b["last_krw"]:
-            manual = [x["key"] for x in (a, b) if not x["auto"]]
-            if manual:
-                note += f" — {'·'.join(manual)} 수동 대표값"
-            d.append({"name": name, "value": a["last_krw"] / b["last_krw"],
-                      "basis": f"{a['key']} {a['last_date']} / {b['key']} {b['last_date']}", "note": note})
-
-    add("KOC / KAU26", koc, kau26, "외부사업 상쇄배출권의 할당배출권 대비 가격 수준(1.0 초과 시 KOC가 더 비쌈)")
-    add("KCU / KAU26", kcu, kau26, "상쇄배출권의 할당배출권 대비 할인율 판단용")
-    add("KAU26 / KAU25", kau26, kau25, "연도물 간 가격차")
-    add("KAU26 / EUA", kau26, eua, "국내 가격의 EU 대비 수준")
-    add("CORSIA / KAU26", corsia, kau26, "국제 항공 상쇄(CORSIA) 가격의 국내 할당 대비 수준")
-    add("VCM / KAU26", vcm, kau26, "자발적 시장 대비")
-    return d
+def weighted_observations(data, family, today):
+    acc = {}
+    for key, series in data.get('series', {}).items():
+        if not ((family == 'KOC' and key == 'KOC') or re.fullmatch(family + r'\d{2}', key)):
+            continue
+        pts, _ = observations(series, data.get('volume', {}).get(key, {}), today)
+        for p in pts:
+            if p['precision'] != 'day' or p['volume'] is None or p['volume'] <= 0:
+                continue
+            a = acc.setdefault(p['label'], {'numerator': 0., 'volume': 0., 'members': []})
+            a['numerator'] += p['price'] * p['volume']
+            a['volume'] += p['volume']
+            a['members'].append({'key': key, 'close': p['price'], 'volume': p['volume']})
+    return {lab: dict(a, price=a['numerator'] / a['volume']) for lab, a in acc.items()}
 
 
-def fmt_p(v):
-    return "–" if v is None else f"{v:+.1%}"
+def build(data, today):
+    res, warnings = {}, []
+    keys = set(data.get('series', {}))
+    for key, family in WEIGHTED.items():
+        if any(k == family or re.fullmatch(family + r'\d{2}', k) for k in keys):
+            keys.add(key)
+    for key in sorted(keys):
+        meta = data.get('meta', {}).get(key, {})
+        status = data.get('status', {}).get(key, {})
+        series = data.get('series', {}).get(key, {})
+        vols = data.get('volume', {}).get(key, {})
+        pts, excluded = observations(series, vols, today)
+        audit = None
+        if key in WEIGHTED:
+            calc = weighted_observations(data, WEIGHTED[key], today)
+            original = {p['label']: p for p in pts}
+            mismatches = []
+            for lab in sorted(set(original) | set(calc)):
+                p, c = original.get(lab), calc.get(lab)
+                if c is None or p is None or abs(p['price'] - c['price']) > .500001 or p['volume'] != c['volume']:
+                    mismatches.append(lab)
+            audit = {'method': 'sum(vintage_close * positive_volume) / sum(positive_volume)',
+                     'transaction_vwap': False, 'stored_mismatches': mismatches, 'components': calc}
+            pts, _ = observations({lab: c['price'] for lab, c in calc.items()},
+                                  {lab: c['volume'] for lab, c in calc.items()}, today)
+            if mismatches:
+                warnings.append(f'{key}: 저장된 가중평균과 검산 불일치 {len(mismatches)}건; 보고서는 검산값 사용')
+        if not pts:
+            warnings.append(f'{key}: 유효 관측 또는 확인된 실거래 없음')
+            continue
+        domestic = key in WEIGHTED or meta.get('cat') == 'kr' or bool(re.fullmatch(r'(KAU|KCU|KOC|IKOC|IKCU)\d*', key))
+        manual = status.get('mode') == 'manual' or not meta.get('auto', domestic)
+        source = status.get('source') or data.get('sources', {}).get(key, {}).get('src')
+        source_since = data.get('sources', {}).get(key, {}).get('since')
+        if source_since:
+            _, cutoff, _ = period(source_since)
+            pts = [p for p in pts if p['period_end'] >= cutoff.isoformat()]
+            if not pts:
+                continue
+        last = pts[-1]
+        traded = [p for p in pts if p['precision'] == 'day' and p['volume'] is not None and p['volume'] > 0] if domestic else []
+        published_changes, published_bases = returns(pts, manual)
+        trade_changes, trade_bases = returns(traded)
+        usable = trade_changes if domestic else published_changes
+        bases = trade_bases if domestic else published_bases
+        kind = ('traded_close_weighted' if key in WEIGHTED else
+                'trade_confirmed_close' if domestic and last['volume'] is not None and last['volume'] > 0 else
+                'reference_no_trade' if domestic and last['volume'] == 0 else
+                'volume_unknown' if domestic else 'manual_quote' if manual else 'published_quote')
+        cur = meta.get('cur', 'KRW')
+        rate = 1. if cur == 'KRW' else number(data.get('fx', {}).get(cur))
+        alerts = []
+        if kind == 'reference_no_trade':
+            alerts.append('거래량 0: 거래 없는 기준가격; 가격 변경을 실거래 상승·하락으로 해석 금지')
+        if kind == 'volume_unknown':
+            alerts.append('거래량 미확인: 실거래 여부 판단 불가')
+        if key == 'KOC':
+            alerts.append("KOC는 KOC21-26 연물; i-KOC·전체 KOC 대표값 아님. 과거 월값은 연물 불명")
+        if domestic and traded and (today - dt.date.fromisoformat(traded[-1]['period_end'])).days > 7:
+            alerts.append(f"마지막 거래 확인일 {traded[-1]['label']}; 최근 시장가격으로 간주 금지")
+        age = (today - dt.date.fromisoformat(last['period_end'])).days
+        if age > (120 if manual else 7):
+            alerts.append(f'관측 지연 {age}일 (월값은 월말 기준 최소 경과일)')
+        if status.get('mode') == 'stopped':
+            alerts.append('수집 중단: ' + status.get('note', '원천 확인 필요'))
+        if manual:
+            alerts.append('관측별 출처·상품 일치 미확인: 기간 수익률 계산 제외')
+        if usable.get('1개월') is not None and abs(usable['1개월']) >= .1:
+            alerts.append(f"거래 확인 기준 1개월 {usable['1개월']:+.1%}" if domestic else f"1개월 {usable['1개월']:+.1%}")
+        analysis_pts = traded if domestic else pts
+        yr = [p for p in analysis_pts if dt.date.fromisoformat(p['period_end']) >= dt.date.fromisoformat(analysis_pts[-1]['period_end']) - dt.timedelta(days=365)] if analysis_pts else []
+        hi = max((p['price'] for p in yr), default=None)
+        lo = min((p['price'] for p in yr), default=None)
+        range_1y = {'high': hi, 'low': lo, 'pos': (analysis_pts[-1]['price'] - lo) / (hi - lo) if hi is not None and hi != lo else None,
+                    'basis': 'confirmed_trades' if domestic else 'published_quotes',
+                    'end_label': analysis_pts[-1]['label'] if analysis_pts else None,
+                    'covers_full_year': bool(analysis_pts and dt.date.fromisoformat(analysis_pts[0]['period_end']) <= dt.date.fromisoformat(analysis_pts[-1]['period_end']) - dt.timedelta(days=365))}
+        flat_run = 0
+        for p in reversed(pts):
+            if p['price'] != last['price']:
+                break
+            flat_run += 1
+        res[key] = dict(key=key, label=meta.get('label', key), cur=cur, auto=not manual,
+                        eco=meta.get('eco', key in WEIGHTED), vintage=meta.get('vintage', False),
+                        instrument=status.get('name', key), mode=status.get('mode'),
+                        last=last['price'], last_date=last['period_end'] if last['precision'] == 'day' else None,
+                        last_label=last['label'], observation=last, volume=last['volume'], price_kind=kind,
+                        last_krw=last['price'] * rate if rate and rate > 0 else None,
+                        fx_asof=data.get('fx_asof'), fx_basis='latest_snapshot_not_historical' if cur != 'KRW' else None,
+                        source=source, source_scope='latest_status_only_not_per_observation', source_since=source_since,
+                        changes=usable, change_basis=bases, published_price_changes=published_changes,
+                        published_change_basis=published_bases, last_trade=traded[-1] if traded else None,
+                        n_points=len(pts), range_1y=range_1y, flat_run=flat_run, excluded=excluded, weighted_audit=audit, alerts=alerts,
+                        history=pts)
+    ratios = []
+    pairs = [('KOC_TRD', 'KAU26'), ('IKOC_TRD', 'KAU26'), ('KOC', 'KAU26'),
+             ('KCU26', 'KAU26'), ('KAU26', 'KAU25'), ('KAU26', 'EU_ETS'),
+             ('CORSIA', 'KAU26'), ('VCM', 'KAU26')]
+    for akey, bkey in pairs:
+        a, b = res.get(akey), res.get(bkey)
+        if not a or not b:
+            continue
+        ap, bp = a['observation'], b['observation']
+        same = ap['precision'] == bp['precision'] == 'day' and ap['label'] == bp['label']
+        active = all(i['price_kind'] in ('trade_confirmed_close', 'traded_close_weighted', 'published_quote') and i['mode'] != 'stopped' for i in (a, b))
+        # Cross-currency ratios need dated historical FX; v3 has only one snapshot.
+        comparable = same and active and a['cur'] == b['cur']
+        val = a['last_krw'] / b['last_krw'] if a['last_krw'] is not None and b['last_krw'] else None
+        common = []
+        for p in a['history']:
+            if p['precision'] != 'day' or (a['cur'] == 'KRW' and not (p['volume'] and p['volume'] > 0)):
+                continue
+            for q in b['history']:
+                if q['precision'] == 'day' and p['label'] == q['label'] and a['cur'] == b['cur'] and (b['cur'] != 'KRW' or (q['volume'] and q['volume'] > 0)):
+                    common.append({'label': p['label'], 'value': p['price'] / q['price']})
+        ratios.append({'name': f'{akey} / {bkey}', 'value': val if comparable else None,
+                       'latest_quote_ratio': val, 'comparable': comparable,
+                       'basis': f"{akey} {ap['label']} / {bkey} {bp['label']}",
+                       'last_common_trade': max(common, key=lambda p: period(p['label'])[1]) if common else None,
+                       'note': '동일 관측일·거래 확인' if comparable else '참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지'})
+    for item in res.values():
+        item.pop('history')
+    return {'schema_version': 3, 'as_of': today.isoformat(), 'source_updated': data.get('updated'),
+            'fx': data.get('fx', {}), 'fx_asof': data.get('fx_asof'),
+            'warnings': warnings, 'indicators': list(res.values()), 'derived': ratios}
 
 
-def fmt_n(v, cur):
-    if cur == "KRW":
-        return f"{v:,.0f}"
-    return f"{v:,.2f}"
+def fmt(value, percent=False):
+    return '–' if value is None else f'{value:+.1%}' if percent else f'{value:,.2f}'
 
 
-def render_md(updated, today, items, drv, fx):
-    L = []
-    L.append(f"# 탄소배출권 트래킹 요약 (에코아이 분석용) — {today.isoformat()}")
-    L.append("")
-    L.append(f"- 원천: `data/prices.json` (수집 갱신 시각 {updated})")
-    L.append("- 자동 수집(일간): " + "·".join(i["key"] for i in items if i["auto"])
-             + " / 수동 갱신(분기 대표값, 일간 변동 해석 금지): " + "·".join(i["key"] for i in items if not i["auto"]))
-    L.append(f"- 환율(원): " + ", ".join(f"{k} {v:,}" for k, v in fx.items()))
-    for i in items:
-        if i.get("source"):
-            L.append(f"- {i['key']} 자동수집 원천: {i['source']} — {i['source_since']} 이후 값만 변동률·고저 계산에 사용"
-                     "(이전 수동 대표값과 직접 비교 불가)")
-    L.append("- 아래 수치는 모두 prices.json 값에서 계산한 변화율·환산이며 별도 추정치는 없음.")
-    L.append("")
-
-    alerts = [(i, a) for i in items for a in i["alerts"]]
-    L.append("## 1. 검토 필요 알림")
-    if alerts:
-        for i, a in alerts:
-            L.append(f"- **{i['key']}**: {a}")
-    else:
-        L.append("- 없음")
-    L.append("")
-
-    for title, flt in (("2. 에코아이 직접연관 지표 (★ 표시 지표)", lambda i: i["eco"]),
-                       ("3. 비교 지표 (참고)", lambda i: not i["eco"])):
-        L.append(f"## {title}")
-        L.append("")
-        L.append("| 지표 | 최신(기준일) | 원화환산 | 직전관측 | 1주 | 1개월 | 3개월 | 6개월 | 1년 | 1년내 위치* | 수집 |")
-        L.append("|---|---|---|---|---|---|---|---|---|---|---|")
-        for i in filter(flt, items):
-            c = i["changes"]
-            pos = i["range_1y"]["pos"]
-            posS = "–" if pos is None else f"{pos:.0%}"
-            if not i["range_1y"]["covers_full_year"]:
-                posS += "†"
-            L.append("| {lab} | {v} {cur} ({d}) | {krw} | {c0} | {c1} | {c2} | {c3} | {c4} | {c5} | {pos} | {src} |".format(
-                lab=("**" + i["label"] + "**") if i["emph"] else i["label"],
-                v=fmt_n(i["last"], i["cur"]), cur=i["cur"], d=i["last_date"],
-                krw=f"{i['last_krw']:,}원" if i["last_krw"] else "–",
-                c0=fmt_p(c.get("직전관측")), c1=fmt_p(c.get("1주")), c2=fmt_p(c.get("1개월")),
-                c3=fmt_p(c.get("3개월")), c4=fmt_p(c.get("6개월")), c5=fmt_p(c.get("1년")),
-                pos=posS, src="자동" if i["auto"] else "수동"))
-        L.append("")
-    L.append("\\* 최근 1년 저점=0%, 고점=100%. † 보유 데이터가 1년 미만이라 보유기간 기준.")
-    L.append("")
-
-    L.append("## 4. 파생 비율 (원화 환산 기준)")
-    if drv:
-        L.append("")
-        L.append("| 비율 | 값 | 기준 | 해석 메모 |")
-        L.append("|---|---|---|---|")
-        for x in drv:
-            L.append(f"| {x['name']} | {x['value']:.2f} | {x['basis']} | {x['note']} |")
-    else:
-        L.append("- 계산 가능한 쌍 없음")
-    L.append("")
-
-    L.append("## 5. 보고서 검토 체크리스트")
-    L.append("- 알림 항목은 원천(KRX ETS 등)에서 확인 전까지 사실로 단정하지 않는다.")
-    L.append("- 에코아이 매출·이익 영향(KOC 판매단가 가정 등)은 이 요약에 포함되지 않음 — 보고서의 가정 단가와 위 KOC 최신가를 대조해 검토한다.")
-    L.append("- 수동 지표는 갱신일을 확인하고, 오래된 값은 보고서에 '기준일'을 병기한다.")
-    L.append("")
-    return "\n".join(L)
+def render_md(report):
+    lines = [f"# 탄소배출권 트래킹 요약 — {report['as_of']}", '',
+             f"- 원천 갱신: {report['source_updated']}; SHA256: `{report.get('source_sha256', '')}`",
+             '- KOC=KOC21-26 연물. i-KOC와 분리. 연물별 기준가격과 거래 확인 가격을 구분한다.',
+             '- 실거래 가중평균=연물별 종가×양의 거래량/합계 거래량. 체결별 VWAP가 아니며 연물 구성 변화 영향을 받는다.',
+             '- 거래량 미확인·0은 실거래 수익률에서 제외. 기간 기준점은 목표일 이전 7일 이내 일값만 사용.',
+             '- 월값의 정확한 관측일은 알 수 없다. 수동 지표의 출처·상품 연속성이 미확인되어 기간 수익률은 계산하지 않는다.',
+             f"- 원화환산은 최신 환율 스냅샷({report.get('fx_asof')}); 관측 당시 환율 환산이 아니다.", '',
+             '## 가격·연물·거래량', '',
+             '| 지표 | 가격 | 관측일/월 | 거래량 | 가격 성격 | 마지막 거래일·가격 | 거래 확인 1개월 |',
+             '|---|---:|---|---:|---|---|---:|']
+    names = {'reference_no_trade': '기준가격(거래 없음)', 'volume_unknown': '거래량 미확인',
+             'trade_confirmed_close': '거래 확인 종가', 'traded_close_weighted': '종가 거래량 가중평균',
+             'manual_quote': '수동 대표값', 'published_quote': '공표 가격'}
+    for i in report['indicators']:
+        t = i['last_trade']
+        lines.append(f"| {i['label']} | {fmt(i['last'])} {i['cur']} | {i['last_label']} | {fmt(i['volume'])} | {names[i['price_kind']]} | {t['label'] + ' · ' + fmt(t['price']) if t else '–'} | {fmt(i['changes'].get('1개월'), True)} |")
+    lines += ['', '## 기간 변화율 (거래 확인일 기준; 수동 지표는 제외)', '',
+              '| 지표 | 기준 관측 | 직전 | 1주 | 1개월 | 3개월 | 6개월 | 1년 |',
+              '|---|---|---:|---:|---:|---:|---:|---:|']
+    for i in report['indicators']:
+        end = i['last_trade']['label'] if i['last_trade'] else i['last_label']
+        values = ' | '.join(fmt(i['changes'].get(n), True) for n in ['직전관측'] + [n for n, _ in WINDOWS])
+        lines.append(f"| {i['key']} | {end} | {values} |")
+        if i['changes'].get('1개월') is not None:
+            b = i['change_basis']['1개월']
+            lines.append(f"<!-- {i['key']} 1개월: {b['from']} → {b['to']}; baseline lag {b['baseline_lag_days']} days -->")
+    lines += ['', '## 출처·주의사항', '']
+    for w in report['warnings']:
+        lines.append('- ' + w)
+    for i in report['indicators']:
+        lines.append(f"- **{i['key']}**: {i['source'] or '출처 기록 없음'} (출처는 최신 status 기준; 과거 관측에 소급하지 않음)")
+        for a in i['alerts']:
+            lines.append('  - ' + a)
+        if i['published_price_changes'].get('1개월') is not None and i['price_kind'] in ('reference_no_trade', 'volume_unknown'):
+            lines.append(f"  - 공표 기준가격 1개월 {i['published_price_changes']['1개월']:+.1%}; 실거래 상승률 아님")
+    lines += ['', '## 파생 비율', '', '| 비율 | 비교 가능한 최신값 | 서로 다른 기준의 참고값 | 기준 | 마지막 동일 거래일·비율 |', '|---|---:|---:|---|---|']
+    for r in report['derived']:
+        c = r['last_common_trade']
+        lines.append(f"| {r['name']} | {fmt(r['value'])} | {fmt(r['latest_quote_ratio']) if not r['comparable'] else '–'} | {r['basis']} · {r['note']} | {c['label'] + ' · ' + fmt(c['value']) if c else '–'} |")
+    return '\n'.join(lines) + '\n'
 
 
 def main():
-    today = datetime.date.today()
-    if "--today" in sys.argv:
-        today = datetime.date.fromisoformat(sys.argv[sys.argv.index("--today") + 1])
-    with open(SRC, encoding="utf-8") as f:
-        data = json.load(f)
-    fx = data.get("fx", {})
-    meta = data.get("meta", {})
-
-    res = {}
-    for key, series in data.get("series", {}).items():
-        r = analyze(key, meta_for(key, meta), series, fx, today,
-                    data.get("sources", {}).get(key))
-        if r:
-            res[key] = r
-    items = sorted(res.values(), key=lambda i: (not i["eco"], not i["emph"], i["key"]))
-    drv = derived(res)
-
-    updated = data.get("updated", "?")
-    with open(OUT_MD, "w", encoding="utf-8") as f:
-        f.write(render_md(updated, today, items, drv, fx))
-    with open(OUT_JSON, "w", encoding="utf-8") as f:
-        json.dump({"as_of": today.isoformat(), "source_updated": updated, "fx": fx,
-                   "indicators": items, "derived": drv}, f, ensure_ascii=False, indent=2)
-    print(f"요약 생성: {OUT_MD} ({len(items)}개 지표, 알림 {sum(len(i['alerts']) for i in items)}건)")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--today', type=dt.date.fromisoformat, default=dt.datetime.now(ZoneInfo('Asia/Seoul')).date())
+    parser.add_argument('--input', type=Path, default=ROOT / 'data/prices.json')
+    parser.add_argument('--output-dir', type=Path, default=ROOT / 'data')
+    args = parser.parse_args()
+    raw = args.input.read_bytes()
+    report = build(json.loads(raw), args.today)
+    report['source_sha256'] = hashlib.sha256(raw).hexdigest()
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    (args.output_dir / 'report_digest.json').write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+    (args.output_dir / 'report_digest.md').write_text(render_md(report), encoding='utf-8')
+    print(f"요약 생성: {len(report['indicators'])}개 지표; 가격 원본 변경 없음")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

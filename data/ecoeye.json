@@ -1,0 +1,28 @@
+{
+  "_설명": "에코아이 연동 지표의 고정 값. 봇(fetch_prices.py)이 건드리지 않는 파일이라 사람이 분기마다 고친다. 시세는 prices.json 에서 매일 읽는다.",
+  "asof": "2026-06-30 (반기보고서 2026.08.14)",
+  "corsia_eeu_issued_t": 1500000,
+  "corsia_sold_krw_1h26": 12215811943,
+  "corsia_sold_t_est": 539171,
+  "corsia_remaining_t_est": 960829,
+  "corsia_asp_krw": 22657,
+  "corsia_asp_usd": 14.98,
+  "inventory_book_krw": 116899832470,
+  "inventory_cost_krw": 122586689000,
+  "domestic_koc_ikoc_t": 1235233,
+  "domestic_forward_assumed_krw": 20000,
+  "backlog_qty_t": 1746968,
+  "backlog_krw": 8480000000,
+  "contract_liab_noncurrent_krw": 10741243943,
+  "rev_1h26_krw": 23141362210,
+  "op_1h26_krw": 2450253695,
+  "rev_2q26_krw": 17756462213,
+  "op_2q26_krw": 6163158355,
+  "sources": {
+    "corsia_asp": "반기보고서 §2-나 주요 품목 가격 변동 추이(규제적 시장 배출권 수출, 가중평균) — 공시 확정",
+    "corsia_sold_t_est": "CORSIA 2건 122.16억 ÷ 실현단가 22,657원 역산 — 추정",
+    "domestic_koc_ikoc_t": "2025 사업보고서 재고 수량표: 제품 i-KOC 199,642 + KOC 155,828 + 상품 i-KOC 604,392 + KOC 275,371 (25.12.31)",
+    "domestic_forward_assumed_krw": "회사 27년 모델의 보수 가정(IR 구두) — 선도계약 단가 조건은 공시 미확인",
+    "backlog": "반기보고서 수주현황 — 미얀마 379,095톤/44.34억 + 방글라데시 1,367,873톤/40.46억"
+  }
+}
