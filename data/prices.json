@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-20 12:55 KST",
+  "updated": "2026-10-20 23:18 KST",
   "note": "KAU·KCU·KOC 는 공공데이터포털 일반상품시세(KRX 배출권시장)에서 평일 하루 두 번 자동 수집하고 빠진 날을 보충한다. 환율은 ECB 기준환율(Frankfurter) 자동. CORSIA·VCM·EU·영국·중국·캘리포니아·RGGI 는 무료 공개 원천이 없어 GitHub Actions 「Run workflow」로 값·날짜·출처를 입력한다(status.<지표>.source 에 출처 보관). 거래량 0 인 날은 거래 없이 기준가가 이어진 값이다.",
   "fx": {
     "USD": 1333,
@@ -3811,7 +3811,7 @@
       "i-KOC26-31"
     ]
   },
-  "fx_asof": "2026-10-19 ECB 기준환율(Frankfurter)",
+  "fx_asof": "2026-10-20 ECB 기준환율(Frankfurter)",
   "krx_done": [
     "26.06.30",
     "26.07.01",
