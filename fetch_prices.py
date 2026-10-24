@@ -208,8 +208,8 @@ def migrate(data):
             st["last"] = max(last, st.get("last") or last, key=parse_label)
 
     data["note"] = ("KAU·KCU·KOC 는 공공데이터포털 일반상품시세(KRX 배출권시장)에서 평일 하루 두 번 자동 수집하고 빠진 날을 보충한다. "
-                    "환율은 ECB 기준환율(Frankfurter) 자동. CORSIA·VCM·EU·영국·중국·캘리포니아·RGGI 는 무료 공개 원천이 없어 "
-                    "GitHub Actions 「Run workflow」로 값·날짜·출처를 입력한다(status.<지표>.source 에 출처 보관). "
+                    "환율은 ECB 기준환율(Frankfurter) 자동. CORSIA 는 ICE 선물 근월물 지연시세를 자동 수집(실패 시 기존 값 유지)하고, "
+                    "VCM·EU·영국·중국·캘리포니아·RGGI 는 무료 공개 원천이 없어 GitHub Actions 「Run workflow」로 값·날짜·출처를 입력한다(status.<지표>.source 에 출처 보관). "
                     "거래량 0 인 날은 거래 없이 기준가가 이어진 값이다.")
     return data
 
@@ -461,6 +461,72 @@ def fetch_eu(data, getter=http_get):
         return False
 
 
+# ───────────────────────── CORSIA (ICE 선물 지연시세, 키 불필요) ─────────────────────────
+# ICE 'CORSIA Eligible Emissions Units (2024-2026) Futures' 근월물. ICE 공개 웹페이지가 쓰는 JSON 경로를 쓴다.
+# 경로·구조가 바뀌면 실패 로그를 남기고 기존 값을 유지한다. 수동 입력(--manual)도 그대로 쓸 수 있다.
+ICE_CORSIA_ID = "83046673"
+ICE_CORSIA_PAGE = f"https://www.ice.com/products/{ICE_CORSIA_ID}/CORSIA-Eligible-Emissions-Units-2024-2026-Futures/data"
+ICE_CORSIA_SRC = "ICE CORSIA Eligible Emissions Units (2024-2026) Futures 근월물 지연시세"
+CORSIA_RANGE = (1.0, 200.0)   # USD/t 밖이면 오수집으로 보고 버린다
+ICE_HEADERS = {"User-Agent": "Mozilla/5.0 (carbon-tracker/3.0)", "Accept": "application/json, text/html;q=0.9",
+               "Referer": ICE_CORSIA_PAGE}
+
+
+def _ice_date(c):
+    """계약의 가격 시각 → date (없으면 None)"""
+    s = str(c.get("lastTime") or c.get("lastUpdateTime") or "").strip()
+    for fmt in ("%m/%d/%Y %I:%M %p", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.datetime.strptime(s, fmt).date()
+        except ValueError:
+            pass
+    return None
+
+
+def fetch_corsia(data, getter=http_get):
+    try:
+        hubs = re.findall(r'hubId["\'=:\s]+(\d+)', getter(ICE_CORSIA_PAGE, ICE_HEADERS, 30))
+        if not hubs:
+            raise ValueError("상품 페이지에서 hubId 를 찾지 못함")
+        contracts = None
+        for url in (f"https://www.ice.com/marketdata/api/productguide/charting/contract-data?productId={ICE_CORSIA_ID}&hubId={hubs[0]}",
+                    f"https://www.ice.com/marketdata/DelayedMarkets.shtml?getContractsAsJson=&productId={ICE_CORSIA_ID}&hubId={hubs[0]}"):
+            try:
+                j = json.loads(getter(url, ICE_HEADERS, 30))
+            except Exception as e:
+                log(f"    CORSIA 경로 실패({url.split('?')[0].rsplit('/', 1)[-1]}): {str(e)[:60]}")
+                continue
+            if isinstance(j, list) and j:
+                contracts = j
+                break
+        if not contracts:
+            raise ValueError("계약 목록 없음")
+        # 목록은 만기순 — 가격이 있는 첫 계약(근월물)
+        pick = next(((c, to_num(c.get("lastPrice")) or to_num(c.get("settlementPrice")))
+                     for c in contracts if (to_num(c.get("lastPrice")) or to_num(c.get("settlementPrice")))), None)
+        if not pick:
+            raise ValueError("가격이 있는 계약 없음")
+        c, price = pick
+        if not CORSIA_RANGE[0] <= price <= CORSIA_RANGE[1]:
+            raise ValueError(f"비정상 가격 {price}")
+        d = _ice_date(c) or (now_kst().date() - datetime.timedelta(days=1))   # 시각 없으면 전일 종가로 본다
+        if d > now_kst().date():
+            raise ValueError(f"미래 날짜 {d}")
+        lab = label_of(d)
+        data["series"].setdefault("CORSIA", {})[lab] = round(price, 2)
+        data["meta"].setdefault("CORSIA", {})["auto"] = True
+        contract = c.get("marketStrip") or c.get("marketId")
+        data["status"]["CORSIA"] = {"mode": "auto", "last": lab, "source": ICE_CORSIA_SRC, "contract": contract}
+        # 원천이 수동 대표값과 다르므로 보고서는 첫 자동 수집일 이후만 비교한다 (build_report 의 sources.since)
+        src = data.setdefault("sources", {}).setdefault("CORSIA", {"src": ICE_CORSIA_SRC, "since": lab})
+        src.setdefault("since", lab)
+        log(f"✅ CORSIA {lab}: ${price} ({contract})")
+        return True
+    except Exception as e:
+        log(f"  CORSIA 자동 실패(기존 값 유지): {str(e)[:80]}")
+        return False
+
+
 # ───────────────────────── 수동 입력 ─────────────────────────
 def manual_update(data):
     key = os.environ.get("MANUAL_SERIES", "").strip()
@@ -507,6 +573,7 @@ def main(argv):
         fetch_krx(data)
         fetch_fx(data)
         fetch_eu(data)
+        fetch_corsia(data)
     changed = save_if_changed(data, before)
     for k in data["meta"]:
         s = data["series"].get(k) or {}
