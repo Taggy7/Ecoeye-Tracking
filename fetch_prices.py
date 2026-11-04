@@ -483,23 +483,42 @@ def _ice_date(c):
     return None
 
 
+def _snip(text, n=200):
+    return re.sub(r"\s+", " ", str(text))[:n]
+
+
 def fetch_corsia(data, getter=http_get):
     try:
-        hubs = re.findall(r'hubId["\'=:\s]+(\d+)', getter(ICE_CORSIA_PAGE, ICE_HEADERS, 30))
+        page = getter(ICE_CORSIA_PAGE, ICE_HEADERS, 30)
+        found = list(re.finditer(r'hubId["\'=:\s]+(\d+)', page))
+        hubs = list(dict.fromkeys(m.group(1) for m in found))[:5]
         if not hubs:
-            raise ValueError("상품 페이지에서 hubId 를 찾지 못함")
+            raise ValueError(f"상품 페이지에서 hubId 를 찾지 못함 (페이지 {len(page)}자: {_snip(page, 120)})")
+        log(f"    CORSIA hubId 후보: {', '.join(hubs)}")
         contracts = None
-        for url in (f"https://www.ice.com/marketdata/api/productguide/charting/contract-data?productId={ICE_CORSIA_ID}&hubId={hubs[0]}",
-                    f"https://www.ice.com/marketdata/DelayedMarkets.shtml?getContractsAsJson=&productId={ICE_CORSIA_ID}&hubId={hubs[0]}"):
-            try:
-                j = json.loads(getter(url, ICE_HEADERS, 30))
-            except Exception as e:
-                log(f"    CORSIA 경로 실패({url.split('?')[0].rsplit('/', 1)[-1]}): {str(e)[:60]}")
-                continue
-            if isinstance(j, list) and j:
-                contracts = j
+        for hub in hubs:   # 페이지에 hubId 가 여럿이면 맞는 것을 찾을 때까지 시도
+            for url in (f"https://www.ice.com/marketdata/api/productguide/charting/contract-data?productId={ICE_CORSIA_ID}&hubId={hub}",
+                        f"https://www.ice.com/marketdata/DelayedMarkets.shtml?getContractsAsJson=&productId={ICE_CORSIA_ID}&hubId={hub}"):
+                name = f"{url.split('?')[0].rsplit('/', 1)[-1]}, hub {hub}"
+                try:
+                    raw = getter(url, ICE_HEADERS, 30)
+                except Exception as e:
+                    log(f"    CORSIA 경로 실패({name}): {str(e)[:60]}")
+                    continue
+                try:
+                    j = json.loads(raw)
+                except ValueError:
+                    log(f"    CORSIA 응답이 JSON 아님({name}): {_snip(raw)}")
+                    continue
+                if isinstance(j, list) and j:
+                    contracts = j
+                    break
+                log(f"    CORSIA 계약 없음({name}): {_snip(raw)}")
+            if contracts:
                 break
         if not contracts:
+            for m in found[:3]:
+                log(f"    CORSIA hubId 문맥: {_snip(page[max(0, m.start() - 80):m.end() + 40])}")
             raise ValueError("계약 목록 없음")
         # 목록은 만기순 — 가격이 있는 첫 계약(근월물)
         pick = next(((c, to_num(c.get("lastPrice")) or to_num(c.get("settlementPrice")))
