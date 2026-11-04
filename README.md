@@ -10,7 +10,8 @@
 | 거래량 | 자동 — 0 이면 「거래 없음」(기준가가 이어진 값) | 같은 API |
 | 환율 USD·EUR·GBP·CNY | 자동 | ECB 기준환율 (Frankfurter, 키 불필요) |
 | EU ETS | 수동 (무료 키 `OILPRICE_KEY` 를 Secrets 에 넣으면 자동) | oilpriceapi.com |
-| CORSIA | **매일 자동** — ICE CORSIA 적격단위(2024-26) 선물 근월물 지연시세, 키 불필요 | 실패하면 기존 값 유지 · Actions 로그 `CORSIA 자동 실패` 줄에 원인. 수동 입력도 계속 가능 |
+| CORSIA | **매일 자동** — ICE CORSIA 적격단위(2024-26) 선물 12월물 정산가 (eSignal 지연시세 페이지. ICE 자체 공개 시세는 구독 필요) | 화면용 페이지라 자동 수집 허용 여부 미확인(개인 분석용 전제). 실패하면 기존 값 유지 · 로그 `CORSIA 자동 실패` 줄. 수동 입력도 가능 |
+| CORSIA_ABX | **매일 자동** — Abaxx(싱가포르) CP1 CORSIA Phase One 선물 12월물 정산가 (거래소 공개 일일 SPAN 파일) | ICE 와 다른 시장이라 CORSIA 를 대신하지 않는 참고값. 보고서에 같은 날 ICE/Abaxx 비율 표시 |
 | VCM · 영국 · 중국 · 캘리포니아 · RGGI | **수동 입력** — 무료 공개 원천이 없음 | 입력할 때 출처를 함께 적음 |
 
 ## 수동 지표 넣는 법 (휴대폰 가능)

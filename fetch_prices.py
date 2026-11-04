@@ -25,7 +25,9 @@ import sys
 import json
 import ssl
 import datetime
+import html
 import urllib.request
+import xml.etree.ElementTree as ET
 import urllib.parse
 import urllib.error
 from zoneinfo import ZoneInfo
@@ -73,14 +75,14 @@ def http_get(url, headers=None, timeout=30):
     req = urllib.request.Request(url, headers=headers or UA)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
-            return r.read().decode("utf-8")
+            return r.read().decode("utf-8", "replace")
     except urllib.error.URLError as e:
         if isinstance(getattr(e, "reason", None), ssl.SSLError):
             if not _ssl_warned:
                 log("  ℹ️ 인증서 검증 실패 → 검증 없이 재시도 (data.go.kr 인증서 체인 문제)")
                 _ssl_warned = True
             with urllib.request.urlopen(req, timeout=timeout, context=_UNVERIFIED) as r:
-                return r.read().decode("utf-8")
+                return r.read().decode("utf-8", "replace")
         raise
 
 
@@ -208,7 +210,7 @@ def migrate(data):
             st["last"] = max(last, st.get("last") or last, key=parse_label)
 
     data["note"] = ("KAU·KCU·KOC 는 공공데이터포털 일반상품시세(KRX 배출권시장)에서 평일 하루 두 번 자동 수집하고 빠진 날을 보충한다. "
-                    "환율은 ECB 기준환율(Frankfurter) 자동. CORSIA 는 ICE 선물 근월물 지연시세를 자동 수집(실패 시 기존 값 유지)하고, "
+                    "환율은 ECB 기준환율(Frankfurter) 자동. CORSIA 는 ICE 선물 12월물 정산가(eSignal 지연시세)를, CORSIA_ABX 는 Abaxx CP1 12월물 정산가(거래소 SPAN 파일)를 자동 수집(실패 시 기존 값 유지)하고, "
                     "VCM·EU·영국·중국·캘리포니아·RGGI 는 무료 공개 원천이 없어 GitHub Actions 「Run workflow」로 값·날짜·출처를 입력한다(status.<지표>.source 에 출처 보관). "
                     "거래량 0 인 날은 거래 없이 기준가가 이어진 값이다.")
     return data
@@ -461,69 +463,125 @@ def fetch_eu(data, getter=http_get):
         return False
 
 
-# ───────────────────────── CORSIA (ICE 선물 지연시세, 키 불필요) ─────────────────────────
-# ICE 'CORSIA Eligible Emissions Units (2024-2026) Futures' 근월물. ICE 공개 웹페이지가 쓰는 JSON 경로를 쓴다.
-# 경로·구조가 바뀌면 실패 로그를 남기고 기존 값을 유지한다. 수동 입력(--manual)도 그대로 쓸 수 있다.
-ICE_CORSIA_ID = "83046673"
-ICE_CORSIA_PAGE = f"https://www.ice.com/products/{ICE_CORSIA_ID}/CORSIA-Eligible-Emissions-Units-2024-2026-Futures/data"
-ICE_CORSIA_SRC = "ICE CORSIA Eligible Emissions Units (2024-2026) Futures 근월물 지연시세"
+# ───────────────────────── CORSIA (ICE 선물 정산가, eSignal 지연시세 페이지) ─────────────────────────
+# ICE 'CORSIA Eligible Emissions Units (2024-2026) Futures'(CP1). ICE 자체 공개 시세는 비어 있어(구독 필요)
+# 같은 상품의 정산가를 보여 주는 eSignal 지연시세 페이지에서 읽는다. 화면용 페이지라 약관상 자동 수집이
+# 허용되는지는 확인하지 못했다(개인 분석용 전제). 실패하면 기존 값을 유지하고, 수동 입력(--manual)도 그대로 쓴다.
+ESIGNAL_CORSIA = "https://quotes.esignal.com/esignalprod/quote.action?symbol=CP1-ICE"
+CORSIA_SRC = "ICE CORSIA EEU(2024-26) 선물 12월물 정산가 — eSignal 지연시세"
 CORSIA_RANGE = (1.0, 200.0)   # USD/t 밖이면 오수집으로 보고 버린다
-ICE_HEADERS = {"User-Agent": "Mozilla/5.0 (carbon-tracker/3.0)", "Accept": "application/json, text/html;q=0.9",
-               "Referer": ICE_CORSIA_PAGE}
+BROWSER_UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
+MONTHS = {m: i for i, m in enumerate(("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 1)}
 
 
-def _ice_date(c):
-    """계약의 가격 시각 → date (없으면 None)"""
-    s = str(c.get("lastTime") or c.get("lastUpdateTime") or "").strip()
-    for fmt in ("%m/%d/%Y %I:%M %p", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%Y-%m-%d"):
-        try:
-            return datetime.datetime.strptime(s, fmt).date()
-        except ValueError:
-            pass
-    return None
+def _cells(page):
+    """표의 각 행 → 빈칸을 뺀 셀 글자 목록"""
+    for tr in re.findall(r"<tr.*?</tr>", page, flags=re.S | re.I):
+        cells = [html.unescape(re.sub(r"<[^>]+>", " ", td)).replace("\xa0", " ").strip()
+                 for td in re.findall(r"<t[dh].*?</t[dh]>", tr, flags=re.S | re.I)]
+        yield [re.sub(r"\s+", " ", c) for c in cells if c.strip()]
+
+
+def parse_esignal(page):
+    """→ (조회일, [(만기 date, 가격, 표시)]). 표시 s=당일 정산가, y=전일 정산가, 없음=장중 체결가"""
+    text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", page)))
+    m = re.search(r"retrieved on ([A-Z][a-z]{2}) ?(\d{1,2}),? (\d{4})", text)
+    asof = datetime.datetime.strptime(" ".join(m.groups()), "%b %d %Y").date() if m else None
+    quotes = []
+    for cells in _cells(page):
+        for i, c in enumerate(cells[:-1]):
+            mm = re.fullmatch(r"([A-Z][a-z]{2})'(\d{2})", c)
+            if not mm or mm.group(1) not in MONTHS:
+                continue
+            price = to_num(cells[i + 1])
+            if price is None:
+                break
+            flag = cells[i + 2] if i + 2 < len(cells) and cells[i + 2] in ("s", "y", "e") else ""
+            quotes.append((datetime.date(2000 + int(mm.group(2)), MONTHS[mm.group(1)], 1), price, flag))
+            break
+    return asof, quotes
 
 
 def fetch_corsia(data, getter=http_get):
     try:
-        hubs = re.findall(r'hubId["\'=:\s]+(\d+)', getter(ICE_CORSIA_PAGE, ICE_HEADERS, 30))
-        if not hubs:
-            raise ValueError("상품 페이지에서 hubId 를 찾지 못함")
-        contracts = None
-        for url in (f"https://www.ice.com/marketdata/api/productguide/charting/contract-data?productId={ICE_CORSIA_ID}&hubId={hubs[0]}",
-                    f"https://www.ice.com/marketdata/DelayedMarkets.shtml?getContractsAsJson=&productId={ICE_CORSIA_ID}&hubId={hubs[0]}"):
-            try:
-                j = json.loads(getter(url, ICE_HEADERS, 30))
-            except Exception as e:
-                log(f"    CORSIA 경로 실패({url.split('?')[0].rsplit('/', 1)[-1]}): {str(e)[:60]}")
-                continue
-            if isinstance(j, list) and j:
-                contracts = j
-                break
-        if not contracts:
-            raise ValueError("계약 목록 없음")
-        # 목록은 만기순 — 가격이 있는 첫 계약(근월물)
-        pick = next(((c, to_num(c.get("lastPrice")) or to_num(c.get("settlementPrice")))
-                     for c in contracts if (to_num(c.get("lastPrice")) or to_num(c.get("settlementPrice")))), None)
-        if not pick:
-            raise ValueError("가격이 있는 계약 없음")
-        c, price = pick
+        asof, quotes = parse_esignal(getter(ESIGNAL_CORSIA, BROWSER_UA, 30))
+        if not asof:
+            raise ValueError("조회 시각 문구를 찾지 못함 (페이지 구조 변경?)")
+        # 기준물: 아직 만기 전인 가장 가까운 12월물 (시장 관행 벤치마크)
+        decs = sorted(q for q in quotes if q[0].month == 12 and q[0] >= asof.replace(day=1))
+        if not decs:
+            raise ValueError(f"12월물 시세 없음 (읽은 계약 {len(quotes)}개)")
+        month, price, flag = decs[0]
+        if flag not in ("s", "y"):
+            raise ValueError(f"정산가가 아닌 값({flag or '장중'}) — 기존 값 유지")
         if not CORSIA_RANGE[0] <= price <= CORSIA_RANGE[1]:
             raise ValueError(f"비정상 가격 {price}")
-        d = _ice_date(c) or (now_kst().date() - datetime.timedelta(days=1))   # 시각 없으면 전일 종가로 본다
-        if d > now_kst().date():
-            raise ValueError(f"미래 날짜 {d}")
+        d = asof
+        if flag == "y":                       # 전일 정산가 → 직전 평일 (거래소 휴일은 반영하지 않음)
+            d -= datetime.timedelta(days=1)
+            while d.weekday() >= 5:
+                d -= datetime.timedelta(days=1)
         lab = label_of(d)
+        contract = month.strftime("%b%y")
         data["series"].setdefault("CORSIA", {})[lab] = round(price, 2)
         data["meta"].setdefault("CORSIA", {})["auto"] = True
-        contract = c.get("marketStrip") or c.get("marketId")
-        data["status"]["CORSIA"] = {"mode": "auto", "last": lab, "source": ICE_CORSIA_SRC, "contract": contract}
-        # 원천이 수동 대표값과 다르므로 보고서는 첫 자동 수집일 이후만 비교한다 (build_report 의 sources.since)
-        src = data.setdefault("sources", {}).setdefault("CORSIA", {"src": ICE_CORSIA_SRC, "since": lab})
+        data["status"]["CORSIA"] = {"mode": "auto", "last": lab, "source": CORSIA_SRC, "contract": contract}
+        # 원천이 기존 수동 대표값과 다르므로 보고서는 첫 자동 수집일 이후만 비교한다 (build_report 의 sources.since)
+        src = data.setdefault("sources", {}).setdefault("CORSIA", {"src": CORSIA_SRC, "since": lab})
         src.setdefault("since", lab)
-        log(f"✅ CORSIA {lab}: ${price} ({contract})")
+        log(f"✅ CORSIA {lab}: ${price} (ICE {contract} 정산가)")
         return True
     except Exception as e:
         log(f"  CORSIA 자동 실패(기존 값 유지): {str(e)[:80]}")
+        return False
+
+
+# Abaxx(싱가포르) CORSIA Phase One 선물(CP1) 12월물 정산가 — 거래소가 공개하는 일일 SPAN 파일.
+# ICE 와 다른 시장이라 CORSIA 줄을 대신하지 않고 CORSIA_ABX 로 따로 기록한다 (교차 확인·ICE 끊김 대비).
+ABAXX_SPAN_LIST = "https://abaxx.exchange/api/eod-span"
+ABAXX_SPAN_FILE = "https://abaxx.exchange/api/eod-span/download?asof={}"
+ABAXX_SRC = "Abaxx CP1(CORSIA Phase One) 선물 12월물 정산가 — 거래소 일일 SPAN 파일"
+ABAXX_META = {"label": "CORSIA 참고 (Abaxx CP1)", "cat": "vcm", "cur": "USD", "color": "#e0a84a", "eco": True, "auto": True}
+
+
+def parse_abaxx_span(xml_text):
+    """SPAN XML → [(만기 date, 정산가, 최종거래일 date|None)] (CP1 선물만)"""
+    out = []
+    for pf in ET.fromstring(xml_text).iter("futPf"):
+        if (pf.findtext("pfCode") or "").strip() != "CP1":
+            continue
+        for f in pf.iter("fut"):
+            pe, price, ld = (f.findtext("pe") or "").strip(), to_num(f.findtext("p")), (f.findtext("ldot") or "").strip()
+            if re.fullmatch(r"\d{6}", pe) and price is not None:
+                out.append((datetime.date(int(pe[:4]), int(pe[4:]), 1), price,
+                            datetime.datetime.strptime(ld, "%Y%m%d").date() if re.fullmatch(r"\d{8}", ld) else None))
+    return out
+
+
+def fetch_corsia_abaxx(data, getter=http_get):
+    key = "CORSIA_ABX"
+    try:
+        days = sorted(r.get("clear_date") for r in json.loads(getter(ABAXX_SPAN_LIST, BROWSER_UA, 30)).get("data", [])
+                      if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(r.get("clear_date"))))
+        if not days:
+            raise ValueError("정산일 목록 없음")
+        clear = datetime.date.fromisoformat(days[-1])
+        futs = parse_abaxx_span(getter(ABAXX_SPAN_FILE.format(days[-1]), BROWSER_UA, 60))
+        live = sorted(f for f in futs if f[0].month == 12 and (f[2] is None or f[2] >= clear))
+        if not live:
+            raise ValueError(f"CP1 12월물 없음 (CP1 계약 {len(futs)}개)")
+        month, price, _ = live[0]
+        if not CORSIA_RANGE[0] <= price <= CORSIA_RANGE[1]:
+            raise ValueError(f"비정상 가격 {price}")
+        lab = label_of(clear)
+        contract = month.strftime("%b%y")
+        data["series"].setdefault(key, {})[lab] = round(price, 2)
+        data["meta"].setdefault(key, dict(ABAXX_META))
+        data["status"][key] = {"mode": "auto", "last": lab, "source": ABAXX_SRC, "contract": contract}
+        log(f"✅ {key} {lab}: ${price} (Abaxx CP1 {contract} 정산가)")
+        return True
+    except Exception as e:
+        log(f"  {key} 자동 실패(기존 값 유지): {str(e)[:80]}")
         return False
 
 
@@ -574,6 +632,7 @@ def main(argv):
         fetch_fx(data)
         fetch_eu(data)
         fetch_corsia(data)
+        fetch_corsia_abaxx(data)
     changed = save_if_changed(data, before)
     for k in data["meta"]:
         s = data["series"].get(k) or {}

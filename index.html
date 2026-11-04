@@ -310,7 +310,7 @@ function renderEco(){
 
 // ── 차트 공통 ──
 // 지표별 색은 고정(순위·필터와 무관). 8색 범주 팔레트(검증 통과), 9번째부터·중단 종목은 회색
-const COLOR = {KAU26:'#3987e5', KOC_TRD:'#d95926', KCU26:'#199e70', CORSIA:'#c98500', EU_ETS:'#9085e9', VCM:'#d55181', UK_ETS:'#008300', CN_CEA:'#e66767'};
+const COLOR = {KAU26:'#3987e5', KOC_TRD:'#d95926', KCU26:'#199e70', CORSIA:'#c98500', CORSIA_ABX:'#e0a84a', EU_ETS:'#9085e9', VCM:'#d55181', UK_ETS:'#008300', CN_CEA:'#e66767'};
 const GRAY = '#6b7385';
 function colorOf(k){ return st(k).mode === 'stopped' ? GRAY : (COLOR[k] || GRAY); }
 const GRAY_DASH = {CA_ETS: [7, 3], RGGI: [2, 3], KAU25: [5, 4], KCU25: [10, 4]};

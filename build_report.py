@@ -210,7 +210,7 @@ def build(data, today):
     ratios = []
     pairs = [('KOC_TRD', 'KAU26'), ('IKOC_TRD', 'KAU26'), ('KOC', 'KAU26'),
              ('KCU26', 'KAU26'), ('KAU26', 'KAU25'), ('KAU26', 'EU_ETS'),
-             ('CORSIA', 'KAU26'), ('VCM', 'KAU26')]
+             ('CORSIA', 'KAU26'), ('VCM', 'KAU26'), ('CORSIA', 'CORSIA_ABX')]
     for akey, bkey in pairs:
         a, b = res.get(akey), res.get(bkey)
         if not a or not b:
