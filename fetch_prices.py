@@ -27,6 +27,7 @@ import ssl
 import datetime
 import html
 import urllib.request
+import xml.etree.ElementTree as ET
 import urllib.parse
 import urllib.error
 from zoneinfo import ZoneInfo
@@ -209,7 +210,7 @@ def migrate(data):
             st["last"] = max(last, st.get("last") or last, key=parse_label)
 
     data["note"] = ("KAU·KCU·KOC 는 공공데이터포털 일반상품시세(KRX 배출권시장)에서 평일 하루 두 번 자동 수집하고 빠진 날을 보충한다. "
-                    "환율은 ECB 기준환율(Frankfurter) 자동. CORSIA 는 ICE 선물 근월물 지연시세를 자동 수집(실패 시 기존 값 유지)하고, "
+                    "환율은 ECB 기준환율(Frankfurter) 자동. CORSIA 는 ICE 선물 12월물 정산가(eSignal 지연시세)를, CORSIA_ABX 는 Abaxx CP1 12월물 정산가(거래소 SPAN 파일)를 자동 수집(실패 시 기존 값 유지)하고, "
                     "VCM·EU·영국·중국·캘리포니아·RGGI 는 무료 공개 원천이 없어 GitHub Actions 「Run workflow」로 값·날짜·출처를 입력한다(status.<지표>.source 에 출처 보관). "
                     "거래량 0 인 날은 거래 없이 기준가가 이어진 값이다.")
     return data
@@ -483,8 +484,9 @@ def _cells(page):
 
 def parse_esignal(page):
     """→ (조회일, [(만기 date, 가격, 표시)]). 표시 s=당일 정산가, y=전일 정산가, 없음=장중 체결가"""
-    m = re.search(r"retrieved on ([A-Z][a-z]{2} \d{1,2} \d{4})", page)
-    asof = datetime.datetime.strptime(m.group(1), "%b %d %Y").date() if m else None
+    text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", page)))
+    m = re.search(r"retrieved on ([A-Z][a-z]{2}) ?(\d{1,2}),? (\d{4})", text)
+    asof = datetime.datetime.strptime(" ".join(m.groups()), "%b %d %Y").date() if m else None
     quotes = []
     for cells in _cells(page):
         for i, c in enumerate(cells[:-1]):
@@ -531,6 +533,55 @@ def fetch_corsia(data, getter=http_get):
         return True
     except Exception as e:
         log(f"  CORSIA 자동 실패(기존 값 유지): {str(e)[:80]}")
+        return False
+
+
+# Abaxx(싱가포르) CORSIA Phase One 선물(CP1) 12월물 정산가 — 거래소가 공개하는 일일 SPAN 파일.
+# ICE 와 다른 시장이라 CORSIA 줄을 대신하지 않고 CORSIA_ABX 로 따로 기록한다 (교차 확인·ICE 끊김 대비).
+ABAXX_SPAN_LIST = "https://abaxx.exchange/api/eod-span"
+ABAXX_SPAN_FILE = "https://abaxx.exchange/api/eod-span/download?asof={}"
+ABAXX_SRC = "Abaxx CP1(CORSIA Phase One) 선물 12월물 정산가 — 거래소 일일 SPAN 파일"
+ABAXX_META = {"label": "CORSIA 참고 (Abaxx CP1)", "cat": "vcm", "cur": "USD", "color": "#e0a84a", "eco": True, "auto": True}
+
+
+def parse_abaxx_span(xml_text):
+    """SPAN XML → [(만기 date, 정산가, 최종거래일 date|None)] (CP1 선물만)"""
+    out = []
+    for pf in ET.fromstring(xml_text).iter("futPf"):
+        if (pf.findtext("pfCode") or "").strip() != "CP1":
+            continue
+        for f in pf.iter("fut"):
+            pe, price, ld = (f.findtext("pe") or "").strip(), to_num(f.findtext("p")), (f.findtext("ldot") or "").strip()
+            if re.fullmatch(r"\d{6}", pe) and price is not None:
+                out.append((datetime.date(int(pe[:4]), int(pe[4:]), 1), price,
+                            datetime.datetime.strptime(ld, "%Y%m%d").date() if re.fullmatch(r"\d{8}", ld) else None))
+    return out
+
+
+def fetch_corsia_abaxx(data, getter=http_get):
+    key = "CORSIA_ABX"
+    try:
+        days = sorted(r.get("clear_date") for r in json.loads(getter(ABAXX_SPAN_LIST, BROWSER_UA, 30)).get("data", [])
+                      if re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(r.get("clear_date"))))
+        if not days:
+            raise ValueError("정산일 목록 없음")
+        clear = datetime.date.fromisoformat(days[-1])
+        futs = parse_abaxx_span(getter(ABAXX_SPAN_FILE.format(days[-1]), BROWSER_UA, 60))
+        live = sorted(f for f in futs if f[0].month == 12 and (f[2] is None or f[2] >= clear))
+        if not live:
+            raise ValueError(f"CP1 12월물 없음 (CP1 계약 {len(futs)}개)")
+        month, price, _ = live[0]
+        if not CORSIA_RANGE[0] <= price <= CORSIA_RANGE[1]:
+            raise ValueError(f"비정상 가격 {price}")
+        lab = label_of(clear)
+        contract = month.strftime("%b%y")
+        data["series"].setdefault(key, {})[lab] = round(price, 2)
+        data["meta"].setdefault(key, dict(ABAXX_META))
+        data["status"][key] = {"mode": "auto", "last": lab, "source": ABAXX_SRC, "contract": contract}
+        log(f"✅ {key} {lab}: ${price} (Abaxx CP1 {contract} 정산가)")
+        return True
+    except Exception as e:
+        log(f"  {key} 자동 실패(기존 값 유지): {str(e)[:80]}")
         return False
 
 
@@ -581,6 +632,7 @@ def main(argv):
         fetch_fx(data)
         fetch_eu(data)
         fetch_corsia(data)
+        fetch_corsia_abaxx(data)
     changed = save_if_changed(data, before)
     for k in data["meta"]:
         s = data["series"].get(k) or {}

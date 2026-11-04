@@ -55,10 +55,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: CORSIA 원천 후보 접속 시험 (작업 브랜치 전용 · 머지 전 제거)
-        continue-on-error: true
-        run: python3 tools/probe_corsia_sources.py
-
       - name: 자동 수집 (KRX 배출권·환율·EU)
         if: github.event_name != 'workflow_dispatch' || inputs.series == ''
         env:

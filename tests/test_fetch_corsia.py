@@ -93,6 +93,12 @@ class FetchCorsiaTest(unittest.TestCase):
         self.assertFalse(fp.fetch_corsia(d, boom))
         self.assertEqual(d, before)
 
+    def test_stamp_split_by_tags(self):
+        d = base()
+        stamp = 'Delayed data retrieved on <span class="x">Nov&nbsp;4 2026</span> 08:12:35 ET'
+        self.assertTrue(fp.fetch_corsia(d, getter(page(ROWS, stamp))))
+        self.assertIn('26.11.03', d['series']['CORSIA'])
+
     def test_report_compares_only_new_source(self):
         d = base()
         fp.fetch_corsia(d, getter(page(ROWS)))
@@ -102,6 +108,60 @@ class FetchCorsiaTest(unittest.TestCase):
         self.assertEqual(i['n_points'], 1)          # 17·12.4 수동 대표값은 비교에서 제외
         self.assertEqual(i['last'], 12.9)
         self.assertFalse(any('관측별 출처' in a for a in i['alerts']))
+
+
+SPAN = """<?xml version="1.0" encoding="UTF-8"?>
+<spanFile><exchange><exch>AXC</exch>
+  <phyPf><pfId>1</pfId><pfCode>CP1</pfCode><phy><cId>1</cId><pe>000000</pe></phy></phyPf>
+  <futPf><pfId>19</pfId><pfCode>CP1</pfCode><name>CORSIA Phase One</name>
+    <undPf><exch>AXC</exch><pfCode>CP1</pfCode></undPf>
+    <fut><cId>1</cId><pe>202611</pe><p>12.64</p><ldot>20261029</ldot></fut>
+    <fut><cId>2</cId><pe>202612</pe><p>12.80</p><ldot>20261217</ldot></fut>
+    <fut><cId>3</cId><pe>202712</pe><p>13.20</p><ldot>20271216</ldot></fut>
+  </futPf>
+  <futPf><pfId>20</pfId><pfCode>EWM</pfCode><fut><pe>202612</pe><p>99.00</p></fut></futPf>
+</exchange></spanFile>"""
+DAYS = '{"success":true,"data":[{"clear_date":"2026-11-03"},{"clear_date":"2026-11-02"}]}'
+
+
+def abaxx(span=SPAN, days=DAYS):
+    def get(url, headers=None, timeout=30):
+        return span if 'download' in url else days
+    return get
+
+
+class AbaxxTest(unittest.TestCase):
+    def test_parse_only_cp1(self):
+        futs = fp.parse_abaxx_span(SPAN)
+        self.assertEqual(len(futs), 3)
+        self.assertIn((dt.date(2026, 12, 1), 12.8, dt.date(2026, 12, 17)), futs)
+
+    def test_records_separate_series(self):
+        d = base()
+        self.assertTrue(fp.fetch_corsia_abaxx(d, abaxx()))
+        self.assertEqual(d['series']['CORSIA_ABX'], {'26.11.03': 12.8})
+        self.assertEqual(d['status']['CORSIA_ABX']['contract'], 'Dec26')
+        self.assertEqual(d['series']['CORSIA'], {'26.06': 17, '26.08': 12.4})   # CORSIA 줄은 건드리지 않음
+
+    def test_skips_expired_december(self):
+        d = base()
+        fp.fetch_corsia_abaxx(d, abaxx(days='{"data":[{"clear_date":"2026-12-18"}]}'))
+        self.assertEqual(d['status']['CORSIA_ABX']['contract'], 'Dec27')
+
+    def test_failures_keep_data(self):
+        for g in (abaxx(days='{"data":[]}'), abaxx(span='<spanFile/>'), abaxx(span='not xml')):
+            d = base()
+            before = copy.deepcopy(d)
+            self.assertFalse(fp.fetch_corsia_abaxx(d, g))
+            self.assertEqual(d, before)
+
+    def test_report_ratio_same_day(self):
+        d = base()
+        fp.fetch_corsia(d, getter(page(ROWS)))
+        fp.fetch_corsia_abaxx(d, abaxx())
+        ratio = next(x for x in br.build(d, dt.date(2026, 11, 4))['derived'] if x['name'] == 'CORSIA / CORSIA_ABX')
+        self.assertTrue(ratio['comparable'])
+        self.assertAlmostEqual(ratio['value'], 12.9 / 12.8)
 
 
 if __name__ == '__main__':
