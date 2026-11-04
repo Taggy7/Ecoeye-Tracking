@@ -1,0 +1,21 @@
+name: Report regression tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: python -m unittest discover -s tests -v
+      - name: Generate without modifying prices
+        run: |
+          sha256sum data/prices.json > /tmp/prices.sha256
+          python build_report.py
+          sha256sum --check /tmp/prices.sha256

@@ -84,7 +84,7 @@
 <div class="wrap">
   <header>
     <h1>탄소배출권 가격 추적 <span>대시보드</span></h1>
-    <div class="sub">국내 K-ETS(KAU·KCU·KOC) 매일 자동 · 해외(EU·영국·중국·캘리포니아·RGGI)·국제(CORSIA·VCM) 수동 입력</div>
+    <div class="sub">국내 K-ETS(KAU·KCU·KOC) 매일 자동 · CORSIA(ICE 선물) 매일 자동 · 해외(EU·영국·중국·캘리포니아·RGGI)·VCM 수동 입력</div>
     <div class="status" id="statusLine">데이터 불러오는 중…</div>
   </header>
 
@@ -285,7 +285,7 @@ function renderEco(){
   const cor = latest('CORSIA');
   if(cor && E.corsia_asp_usd){
     const p = pct(cor.v, E.corsia_asp_usd);
-    cards.push({k: 'CORSIA 시장가 vs 에코아이 실현가', manual: 1, v: '$' + cor.v + ' / $' + E.corsia_asp_usd,
+    cards.push({k: 'CORSIA 시장가 vs 에코아이 실현가', manual: st('CORSIA').mode !== 'auto', v: '$' + cor.v + ' / $' + E.corsia_asp_usd,
       d: `시장가 ${cor.d} · 실현가 대비 ${pctHtml(p)}<br>실현가: 2Q26 수출 가중평균(공시)<br>시장가 출처: ${esc(st('CORSIA').source || '–')}`});
   }
   if(cor && E.corsia_remaining_t_est && fx('USD')){
