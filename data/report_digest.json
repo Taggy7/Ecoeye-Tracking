@@ -1,14 +1,14 @@
 {
   "schema_version": 3,
-  "as_of": "2026-11-07",
-  "source_updated": "2026-11-07 01:45 KST",
+  "as_of": "2026-11-10",
+  "source_updated": "2026-11-10 04:49 KST",
   "fx": {
-    "USD": 1359,
-    "EUR": 1517,
-    "GBP": 1819,
-    "CNY": 204
+    "USD": 1347,
+    "EUR": 1507,
+    "GBP": 1807,
+    "CNY": 202
   },
-  "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+  "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
   "warnings": [],
   "indicators": [
     {
@@ -33,8 +33,8 @@
       },
       "volume": null,
       "price_kind": "manual_quote",
-      "last_krw": 39152.79,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 38807.07,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": "latest_snapshot_not_historical",
       "source": "기존 대표값(출처는 note 참조)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -71,7 +71,7 @@
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
-        "관측 지연 130일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 133일 (월값은 월말 기준 최소 경과일)",
         "관측별 출처·상품 일치 미확인: 기간 수익률 계산 제외"
       ]
     },
@@ -97,8 +97,8 @@
       },
       "volume": null,
       "price_kind": "manual_quote",
-      "last_krw": 16789.2,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 16624.6,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": "latest_snapshot_not_historical",
       "source": "기존 대표값(출처는 note 참조)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -135,7 +135,7 @@
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
-        "관측 지연 130일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 133일 (월값은 월말 기준 최소 경과일)",
         "관측별 출처·상품 일치 미확인: 기간 수익률 계산 제외"
       ]
     },
@@ -161,8 +161,8 @@
       },
       "volume": null,
       "price_kind": "manual_quote",
-      "last_krw": 16851.600000000002,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 16702.8,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": "latest_snapshot_not_historical",
       "source": "ICE Futures Europe CORSIA EEU(2024-2026) 선물 — 블로그(빤딱이 26.8.12) 인용, 원문 미확인",
       "source_scope": "latest_status_only_not_per_observation",
@@ -224,8 +224,8 @@
       },
       "volume": null,
       "price_kind": "manual_quote",
-      "last_krw": 127170.11,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 126331.81,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": "latest_snapshot_not_historical",
       "source": "2026-08-24 수동 입력(로컬 사본) — 출처 기록 없음",
       "source_scope": "latest_status_only_not_per_observation",
@@ -288,7 +288,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 22550.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -349,7 +349,7 @@
       "weighted_audit": null,
       "alerts": [
         "거래량 0: 거래 없는 기준가격; 가격 변경을 실거래 상승·하락으로 해석 금지",
-        "관측 지연 66일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 69일 (월값은 월말 기준 최소 경과일)",
         "수집 중단: 26.09.02 이후 API 응답에 이 종목이 없음"
       ]
     },
@@ -363,12 +363,12 @@
       "instrument": "i-KCU26",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -376,7 +376,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -400,38 +400,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 22550.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 15450.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -440,7 +440,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -457,12 +457,12 @@
       "instrument": "i-KOC21-26",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -470,7 +470,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -494,38 +494,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 23800.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 14900.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -534,7 +534,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -551,12 +551,12 @@
       "instrument": "i-KOC22-27",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -564,7 +564,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -588,38 +588,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 24300.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 12550.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -628,7 +628,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -645,12 +645,12 @@
       "instrument": "i-KOC23-28",
       "mode": "auto",
       "last": 31000.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 31000.0,
         "volume": 0.0
@@ -658,7 +658,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 31000.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -705,31 +705,31 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 31000.0,
           "to_price": 31000.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 31000.0,
           "to_price": 31000.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 31500.0,
           "to_price": 31000.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 26000.0,
           "to_price": 31000.0
@@ -743,7 +743,7 @@
         "price": 31500.0,
         "volume": 10000.0
       },
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": 31500.0,
         "low": 23000.0,
@@ -752,7 +752,7 @@
         "end_label": "26.08.24",
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -771,12 +771,12 @@
       "instrument": "i-KOC24-29",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -784,7 +784,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -808,38 +808,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 25550.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 14500.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -848,7 +848,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -865,12 +865,12 @@
       "instrument": "i-KOC25-30",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -878,7 +878,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -902,38 +902,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 23900.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 12400.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -942,7 +942,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -959,12 +959,12 @@
       "instrument": "i-KOC26-31",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -972,7 +972,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -996,38 +996,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 23900.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 12400.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1036,7 +1036,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1066,7 +1066,7 @@
       "volume": 10000.0,
       "price_kind": "traded_close_weighted",
       "last_krw": 31500.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "IKOC 연물별 종가×거래량 가중평균 — 거래가 있었던 날만 점이 찍힘",
       "source_scope": "latest_status_only_not_per_observation",
@@ -1223,7 +1223,7 @@
       },
       "alerts": [
         "마지막 거래 확인일 26.08.24; 최근 시장가격으로 간주 금지",
-        "관측 지연 75일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 78일 (월값은 월말 기준 최소 경과일)",
         "거래 확인 기준 1개월 +21.2%"
       ]
     },
@@ -1250,7 +1250,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 29450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -1366,7 +1366,7 @@
       "alerts": [
         "거래량 0: 거래 없는 기준가격; 가격 변경을 실거래 상승·하락으로 해석 금지",
         "마지막 거래 확인일 26.08.31; 최근 시장가격으로 간주 금지",
-        "관측 지연 66일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 69일 (월값은 월말 기준 최소 경과일)",
         "수집 중단: 26.09.02 이후 API 응답에 이 종목이 없음",
         "거래 확인 기준 1개월 +13.5%"
       ]
@@ -1380,120 +1380,120 @@
       "vintage": false,
       "instrument": "KAU26",
       "mode": "auto",
-      "last": 29500.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last": 29600.0,
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
-        "price": 29500.0,
-        "volume": 311700.0
+        "price": 29600.0,
+        "volume": 237200.0
       },
-      "volume": 311700.0,
+      "volume": 237200.0,
       "price_kind": "trade_confirmed_close",
-      "last_krw": 29500.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 29600.0,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
       "source_since": null,
       "changes": {
-        "1주": -0.024793388429752095,
-        "1개월": -0.005059021922428353,
-        "3개월": 0.13461538461538458,
+        "1주": -0.02148760330578514,
+        "1개월": 0.0016920473773265332,
+        "3개월": 0.1384615384615384,
         "6개월": null,
         "1년": null,
-        "직전관측": -0.005059021922428353
+        "직전관측": 0.003389830508474523
       },
       "change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
-          "from_price": 29650.0,
-          "to_price": 29500.0
+          "from": "26.11.05",
+          "to": "26.11.06",
+          "from_price": 29500.0,
+          "to_price": 29600.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30250.0,
-          "to_price": 29500.0
+          "to_price": 29600.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
-          "from_price": 29650.0,
-          "to_price": 29500.0
+          "from_price": 29550.0,
+          "to_price": 29600.0
         },
         "3개월": {
           "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
-          "baseline_lag_days": 0,
+          "to": "26.11.06",
+          "target": "2026-08-07",
+          "baseline_lag_days": 1,
           "from_price": 26000.0,
-          "to_price": 29500.0
+          "to_price": 29600.0
         }
       },
       "published_price_changes": {
-        "1주": -0.024793388429752095,
-        "1개월": -0.005059021922428353,
-        "3개월": 0.13461538461538458,
+        "1주": -0.02148760330578514,
+        "1개월": 0.0016920473773265332,
+        "3개월": 0.1384615384615384,
         "6개월": null,
         "1년": null,
-        "직전관측": -0.005059021922428353
+        "직전관측": 0.003389830508474523
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
-          "from_price": 29650.0,
-          "to_price": 29500.0
+          "from": "26.11.05",
+          "to": "26.11.06",
+          "from_price": 29500.0,
+          "to_price": 29600.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30250.0,
-          "to_price": 29500.0
+          "to_price": 29600.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
-          "from_price": 29650.0,
-          "to_price": 29500.0
+          "from_price": 29550.0,
+          "to_price": 29600.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 26000.0,
-          "to_price": 29500.0
+          "to_price": 29600.0
         }
       },
       "last_trade": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
-        "price": 29500.0,
-        "volume": 311700.0
+        "price": 29600.0,
+        "volume": 237200.0
       },
-      "n_points": 88,
+      "n_points": 89,
       "range_1y": {
         "high": 30850.0,
         "low": 26000.0,
-        "pos": 0.7216494845360825,
+        "pos": 0.7422680412371134,
         "basis": "confirmed_trades",
-        "end_label": "26.11.05",
+        "end_label": "26.11.06",
         "covers_full_year": false
       },
       "flat_run": 1,
@@ -1511,12 +1511,12 @@
       "instrument": "KAU27",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1524,7 +1524,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 29450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -1548,38 +1548,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1588,7 +1588,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 44,
+      "flat_run": 45,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1605,12 +1605,12 @@
       "instrument": "KAU28",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1618,7 +1618,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 29450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -1642,38 +1642,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1682,7 +1682,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 44,
+      "flat_run": 45,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1699,12 +1699,12 @@
       "instrument": "KAU29",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1712,7 +1712,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 29450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -1736,38 +1736,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1776,7 +1776,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 44,
+      "flat_run": 45,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1793,12 +1793,12 @@
       "instrument": "KAU30",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1806,7 +1806,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 29450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -1830,38 +1830,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1870,7 +1870,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 44,
+      "flat_run": 45,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1900,7 +1900,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 13500.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -1984,7 +1984,7 @@
       "alerts": [
         "거래량 0: 거래 없는 기준가격; 가격 변경을 실거래 상승·하락으로 해석 금지",
         "마지막 거래 확인일 26.08.21; 최근 시장가격으로 간주 금지",
-        "관측 지연 66일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 69일 (월값은 월말 기준 최소 경과일)",
         "수집 중단: 26.09.02 이후 API 응답에 이 종목이 없음"
       ]
     },
@@ -1998,12 +1998,12 @@
       "instrument": "KCU26",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2011,7 +2011,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -2035,38 +2035,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 13500.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 9300.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2075,7 +2075,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2092,12 +2092,12 @@
       "instrument": "KOC21-26",
       "mode": "auto",
       "last": 28200.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 28200.0,
         "volume": 0.0
@@ -2105,7 +2105,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 28200.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -2129,46 +2129,46 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 28200.0,
           "to_price": 28200.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 28200.0,
           "to_price": 28200.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 28200.0,
           "to_price": 28200.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 12050.0,
           "to_price": 28200.0
         },
         "6개월": {
           "from": "26.03",
-          "to": "26.11.05",
-          "target": "2026-05-07",
-          "baseline_lag_days": 37,
+          "to": "26.11.06",
+          "target": "2026-05-08",
+          "baseline_lag_days": 38,
           "from_price": 10500.0,
           "to_price": 28200.0
         }
       },
       "last_trade": null,
-      "n_points": 89,
+      "n_points": 90,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2177,7 +2177,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 23,
+      "flat_run": 24,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2195,12 +2195,12 @@
       "instrument": "KOC22-27",
       "mode": "auto",
       "last": 30000.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30000.0,
         "volume": 0.0
@@ -2208,7 +2208,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30000.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -2247,7 +2247,7 @@
       },
       "published_price_changes": {
         "1주": 0.0,
-        "1개월": 0.010101010101010166,
+        "1개월": 0.0033444816053511683,
         "3개월": 1.727272727272727,
         "6개월": null,
         "1년": null,
@@ -2255,31 +2255,31 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30000.0,
           "to_price": 30000.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30000.0,
           "to_price": 30000.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
-          "from_price": 29700.0,
+          "from_price": 29900.0,
           "to_price": 30000.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 11000.0,
           "to_price": 30000.0
@@ -2293,7 +2293,7 @@
         "price": 30000.0,
         "volume": 5000.0
       },
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": 30000.0,
         "low": 11000.0,
@@ -2302,7 +2302,7 @@
         "end_label": "26.10.08",
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2321,12 +2321,12 @@
       "instrument": "KOC23-28",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2334,7 +2334,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -2358,38 +2358,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 24050.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 15000.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2398,7 +2398,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2415,12 +2415,12 @@
       "instrument": "KOC24-29",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2428,7 +2428,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -2452,31 +2452,31 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 26100.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 13500.0,
           "to_price": 30450.0
@@ -2490,7 +2490,7 @@
         "price": 26100.0,
         "volume": 16017.0
       },
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": 26100.0,
         "low": 26100.0,
@@ -2499,7 +2499,7 @@
         "end_label": "26.09.08",
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2517,12 +2517,12 @@
       "instrument": "KOC25-30",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2530,7 +2530,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -2554,31 +2554,31 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 25100.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 13000.0,
           "to_price": 30450.0
@@ -2592,7 +2592,7 @@
         "price": 25100.0,
         "volume": 28983.0
       },
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": 25100.0,
         "low": 25100.0,
@@ -2601,7 +2601,7 @@
         "end_label": "26.09.08",
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2619,12 +2619,12 @@
       "instrument": "KOC26-31",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-05",
-      "last_label": "26.11.05",
+      "last_date": "2026-11-06",
+      "last_label": "26.11.06",
       "observation": {
-        "label": "26.11.05",
-        "period_start": "2026-11-05",
-        "period_end": "2026-11-05",
+        "label": "26.11.06",
+        "period_start": "2026-11-06",
+        "period_end": "2026-11-06",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2632,7 +2632,7 @@
       "volume": 0.0,
       "price_kind": "reference_no_trade",
       "last_krw": 30450.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -2656,38 +2656,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.04",
-          "to": "26.11.05",
+          "from": "26.11.05",
+          "to": "26.11.06",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.29",
-          "to": "26.11.05",
-          "target": "2026-10-29",
+          "from": "26.10.30",
+          "to": "26.11.06",
+          "target": "2026-10-30",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.06",
-          "to": "26.11.05",
-          "target": "2026-10-06",
+          "from": "26.10.07",
+          "to": "26.11.06",
+          "target": "2026-10-07",
           "baseline_lag_days": 0,
           "from_price": 21300.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.06",
-          "to": "26.11.05",
-          "target": "2026-08-06",
+          "from": "26.08.07",
+          "to": "26.11.06",
+          "target": "2026-08-07",
           "baseline_lag_days": 0,
           "from_price": 11000.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 86,
+      "n_points": 87,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2696,7 +2696,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 19,
+      "flat_run": 20,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2726,7 +2726,7 @@
       "volume": 5000.0,
       "price_kind": "traded_close_weighted",
       "last_krw": 30000.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "KOC 연물별 종가×거래량 가중평균 — 거래가 있었던 날만 점이 찍힘",
       "source_scope": "latest_status_only_not_per_observation",
@@ -3020,7 +3020,7 @@
       },
       "alerts": [
         "마지막 거래 확인일 26.10.08; 최근 시장가격으로 간주 금지",
-        "관측 지연 30일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 33일 (월값은 월말 기준 최소 경과일)",
         "거래 확인 기준 1개월 +17.9%"
       ]
     },
@@ -3046,8 +3046,8 @@
       },
       "volume": null,
       "price_kind": "manual_quote",
-      "last_krw": 47565.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 47145.0,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": "latest_snapshot_not_historical",
       "source": "기존 대표값(출처는 note 참조)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -3084,7 +3084,7 @@
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
-        "관측 지연 130일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 133일 (월값은 월말 기준 최소 경과일)",
         "관측별 출처·상품 일치 미확인: 기간 수익률 계산 제외"
       ]
     },
@@ -3110,8 +3110,8 @@
       },
       "volume": null,
       "price_kind": "manual_quote",
-      "last_krw": 99808.53,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 99150.09,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": "latest_snapshot_not_historical",
       "source": "기존 대표값(출처는 note 참조)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -3173,8 +3173,8 @@
       },
       "volume": null,
       "price_kind": "manual_quote",
-      "last_krw": 20385.0,
-      "fx_asof": "2026-11-06 ECB 기준환율(Frankfurter)",
+      "last_krw": 20205.0,
+      "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": "latest_snapshot_not_historical",
       "source": "기존 대표값(출처는 note 참조)",
       "source_scope": "latest_status_only_not_per_observation",
@@ -3211,7 +3211,7 @@
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
-        "관측 지연 130일 (월값은 월말 기준 최소 경과일)",
+        "관측 지연 133일 (월값은 월말 기준 최소 경과일)",
         "관측별 출처·상품 일치 미확인: 기간 수익률 계산 제외"
       ]
     }
@@ -3220,9 +3220,9 @@
     {
       "name": "KOC_TRD / KAU26",
       "value": null,
-      "latest_quote_ratio": 1.0169491525423728,
+      "latest_quote_ratio": 1.0135135135135136,
       "comparable": false,
-      "basis": "KOC_TRD 26.10.08 / KAU26 26.11.05",
+      "basis": "KOC_TRD 26.10.08 / KAU26 26.11.06",
       "last_common_trade": {
         "label": "26.10.08",
         "value": 0.9852216748768473
@@ -3232,9 +3232,9 @@
     {
       "name": "IKOC_TRD / KAU26",
       "value": null,
-      "latest_quote_ratio": 1.0677966101694916,
+      "latest_quote_ratio": 1.0641891891891893,
       "comparable": false,
-      "basis": "IKOC_TRD 26.08.24 / KAU26 26.11.05",
+      "basis": "IKOC_TRD 26.08.24 / KAU26 26.11.06",
       "last_common_trade": {
         "label": "26.08.21",
         "value": 1.0661016949152542
@@ -3244,27 +3244,27 @@
     {
       "name": "KOC / KAU26",
       "value": null,
-      "latest_quote_ratio": 0.9559322033898305,
+      "latest_quote_ratio": 0.9527027027027027,
       "comparable": false,
-      "basis": "KOC 26.11.05 / KAU26 26.11.05",
+      "basis": "KOC 26.11.06 / KAU26 26.11.06",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "KCU26 / KAU26",
       "value": null,
-      "latest_quote_ratio": 1.0322033898305085,
+      "latest_quote_ratio": 1.0287162162162162,
       "comparable": false,
-      "basis": "KCU26 26.11.05 / KAU26 26.11.05",
+      "basis": "KCU26 26.11.06 / KAU26 26.11.06",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "KAU26 / KAU25",
       "value": null,
-      "latest_quote_ratio": 1.0016977928692699,
+      "latest_quote_ratio": 1.0050933786078098,
       "comparable": false,
-      "basis": "KAU26 26.11.05 / KAU25 26.09.02",
+      "basis": "KAU26 26.11.06 / KAU25 26.09.02",
       "last_common_trade": {
         "label": "26.08.31",
         "value": 0.9813242784380306
@@ -3274,30 +3274,30 @@
     {
       "name": "KAU26 / EU_ETS",
       "value": null,
-      "latest_quote_ratio": 0.23197274894234188,
+      "latest_quote_ratio": 0.2343036168008675,
       "comparable": false,
-      "basis": "KAU26 26.11.05 / EU_ETS 26.08",
+      "basis": "KAU26 26.11.06 / EU_ETS 26.08",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "CORSIA / KAU26",
       "value": null,
-      "latest_quote_ratio": 0.5712406779661018,
+      "latest_quote_ratio": 0.5642837837837837,
       "comparable": false,
-      "basis": "CORSIA 26.08 / KAU26 26.11.05",
+      "basis": "CORSIA 26.08 / KAU26 26.11.06",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "VCM / KAU26",
       "value": null,
-      "latest_quote_ratio": 0.6910169491525424,
+      "latest_quote_ratio": 0.6826013513513514,
       "comparable": false,
-      "basis": "VCM 26.06 / KAU26 26.11.05",
+      "basis": "VCM 26.06 / KAU26 26.11.06",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     }
   ],
-  "source_sha256": "ef3f8e91a790c98d9eed0a94f216cdafcb388fe5d96f975ef1fe321d4fc23f47"
+  "source_sha256": "01ef70a0941daa3ee6ec674d84eeb9ec6de325bd07ab03991fb701009da59537"
 }
