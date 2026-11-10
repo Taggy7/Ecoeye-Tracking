@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "as_of": "2026-11-10",
-  "source_updated": "2026-11-10 04:49 KST",
+  "source_updated": "2026-11-10 15:24 KST",
   "fx": {
     "USD": 1347,
     "EUR": 1507,
@@ -363,12 +363,12 @@
       "instrument": "i-KCU26",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -400,38 +400,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 22550.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 15450.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -440,7 +440,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -457,12 +457,12 @@
       "instrument": "i-KOC21-26",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -494,38 +494,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 23800.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 14900.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -534,7 +534,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -551,12 +551,12 @@
       "instrument": "i-KOC22-27",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -588,38 +588,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 24300.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 12550.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -628,7 +628,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -645,12 +645,12 @@
       "instrument": "i-KOC23-28",
       "mode": "auto",
       "last": 31000.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 31000.0,
         "volume": 0.0
@@ -705,31 +705,31 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 31000.0,
           "to_price": 31000.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 31000.0,
           "to_price": 31000.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 31500.0,
           "to_price": 31000.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 26000.0,
           "to_price": 31000.0
@@ -743,7 +743,7 @@
         "price": 31500.0,
         "volume": 10000.0
       },
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": 31500.0,
         "low": 23000.0,
@@ -752,7 +752,7 @@
         "end_label": "26.08.24",
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -771,12 +771,12 @@
       "instrument": "i-KOC24-29",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -808,38 +808,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 25550.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 14500.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -848,7 +848,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -865,12 +865,12 @@
       "instrument": "i-KOC25-30",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -902,38 +902,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 23900.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 12400.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -942,7 +942,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -959,12 +959,12 @@
       "instrument": "i-KOC26-31",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -996,38 +996,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 23900.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 12400.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1036,7 +1036,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1380,120 +1380,120 @@
       "vintage": false,
       "instrument": "KAU26",
       "mode": "auto",
-      "last": 29600.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last": 29500.0,
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
-        "price": 29600.0,
-        "volume": 237200.0
+        "price": 29500.0,
+        "volume": 166000.0
       },
-      "volume": 237200.0,
+      "volume": 166000.0,
       "price_kind": "trade_confirmed_close",
-      "last_krw": 29600.0,
+      "last_krw": 29500.0,
       "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
       "source_scope": "latest_status_only_not_per_observation",
       "source_since": null,
       "changes": {
-        "1주": -0.02148760330578514,
-        "1개월": 0.0016920473773265332,
-        "3개월": 0.1384615384615384,
+        "1주": -0.01666666666666672,
+        "1개월": -0.031198686371100126,
+        "3개월": 0.13461538461538458,
         "6개월": null,
         "1년": null,
-        "직전관측": 0.003389830508474523
+        "직전관측": -0.0033783783783783994
       },
       "change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
-          "from_price": 29500.0,
-          "to_price": 29600.0
+          "from": "26.11.06",
+          "to": "26.11.09",
+          "from_price": 29600.0,
+          "to_price": 29500.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
-          "from_price": 30250.0,
-          "to_price": 29600.0
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
-          "from_price": 29550.0,
-          "to_price": 29600.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
+          "from_price": 30450.0,
+          "to_price": 29500.0
         },
         "3개월": {
           "from": "26.08.06",
-          "to": "26.11.06",
-          "target": "2026-08-07",
-          "baseline_lag_days": 1,
+          "to": "26.11.09",
+          "target": "2026-08-10",
+          "baseline_lag_days": 4,
           "from_price": 26000.0,
-          "to_price": 29600.0
+          "to_price": 29500.0
         }
       },
       "published_price_changes": {
-        "1주": -0.02148760330578514,
-        "1개월": 0.0016920473773265332,
-        "3개월": 0.1384615384615384,
+        "1주": -0.01666666666666672,
+        "1개월": -0.031198686371100126,
+        "3개월": 0.13461538461538458,
         "6개월": null,
         "1년": null,
-        "직전관측": 0.003389830508474523
+        "직전관측": -0.0033783783783783994
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
-          "from_price": 29500.0,
-          "to_price": 29600.0
+          "from": "26.11.06",
+          "to": "26.11.09",
+          "from_price": 29600.0,
+          "to_price": 29500.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
-          "from_price": 30250.0,
-          "to_price": 29600.0
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
-          "from_price": 29550.0,
-          "to_price": 29600.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
+          "from_price": 30450.0,
+          "to_price": 29500.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 26000.0,
-          "to_price": 29600.0
+          "to_price": 29500.0
         }
       },
       "last_trade": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
-        "price": 29600.0,
-        "volume": 237200.0
+        "price": 29500.0,
+        "volume": 166000.0
       },
-      "n_points": 89,
+      "n_points": 90,
       "range_1y": {
         "high": 30850.0,
         "low": 26000.0,
-        "pos": 0.7422680412371134,
+        "pos": 0.7216494845360825,
         "basis": "confirmed_trades",
-        "end_label": "26.11.06",
+        "end_label": "26.11.09",
         "covers_full_year": false
       },
       "flat_run": 1,
@@ -1511,12 +1511,12 @@
       "instrument": "KAU27",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1548,38 +1548,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1588,7 +1588,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 45,
+      "flat_run": 46,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1605,12 +1605,12 @@
       "instrument": "KAU28",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1642,38 +1642,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1682,7 +1682,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 45,
+      "flat_run": 46,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1699,12 +1699,12 @@
       "instrument": "KAU29",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1736,38 +1736,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1776,7 +1776,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 45,
+      "flat_run": 46,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1793,12 +1793,12 @@
       "instrument": "KAU30",
       "mode": "auto",
       "last": 29450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 29450.0,
         "volume": 0.0
@@ -1830,38 +1830,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 29450.0,
           "to_price": 29450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 24550.0,
           "to_price": 29450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -1870,7 +1870,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 45,
+      "flat_run": 46,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -1998,12 +1998,12 @@
       "instrument": "KCU26",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2035,38 +2035,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 13500.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 9300.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 88,
+      "n_points": 89,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2075,7 +2075,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2092,12 +2092,12 @@
       "instrument": "KOC21-26",
       "mode": "auto",
       "last": 28200.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 28200.0,
         "volume": 0.0
@@ -2129,46 +2129,46 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 28200.0,
           "to_price": 28200.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 28200.0,
           "to_price": 28200.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 28200.0,
           "to_price": 28200.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 12050.0,
           "to_price": 28200.0
         },
         "6개월": {
           "from": "26.03",
-          "to": "26.11.06",
-          "target": "2026-05-08",
-          "baseline_lag_days": 38,
+          "to": "26.11.09",
+          "target": "2026-05-11",
+          "baseline_lag_days": 41,
           "from_price": 10500.0,
           "to_price": 28200.0
         }
       },
       "last_trade": null,
-      "n_points": 90,
+      "n_points": 91,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2177,7 +2177,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 24,
+      "flat_run": 25,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2194,20 +2194,20 @@
       "vintage": true,
       "instrument": "KOC22-27",
       "mode": "auto",
-      "last": 30000.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last": 29500.0,
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
-        "price": 30000.0,
-        "volume": 0.0
+        "price": 29500.0,
+        "volume": 10000.0
       },
-      "volume": 0.0,
-      "price_kind": "reference_no_trade",
-      "last_krw": 30000.0,
+      "volume": 10000.0,
+      "price_kind": "trade_confirmed_close",
+      "last_krw": 29500.0,
       "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "공공데이터포털 일반상품시세정보(KRX 배출권시장)",
@@ -2215,101 +2215,105 @@
       "source_since": null,
       "changes": {
         "1주": null,
-        "1개월": 0.19999999999999996,
-        "3개월": null,
+        "1개월": -0.01666666666666672,
+        "3개월": 1.6818181818181817,
         "6개월": null,
         "1년": null,
-        "직전관측": 0.0033444816053511683
+        "직전관측": -0.01666666666666672
       },
       "change_basis": {
         "직전관측": {
-          "from": "26.10.07",
-          "to": "26.10.08",
-          "from_price": 29900.0,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1주": {
-          "from": "26.09.23",
-          "to": "26.10.08",
-          "target": "2026-10-01",
-          "baseline_lag_days": 8,
-          "from_price": 29600.0,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-11-02",
+          "baseline_lag_days": 25,
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1개월": {
-          "from": "26.09.04",
-          "to": "26.10.08",
-          "target": "2026-09-08",
-          "baseline_lag_days": 4,
-          "from_price": 25000.0,
-          "to_price": 30000.0
-        }
-      },
-      "published_price_changes": {
-        "1주": 0.0,
-        "1개월": 0.0033444816053511683,
-        "3개월": 1.727272727272727,
-        "6개월": null,
-        "1년": null,
-        "직전관측": 0.0
-      },
-      "published_change_basis": {
-        "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 30000.0,
-          "to_price": 30000.0
-        },
-        "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
-          "baseline_lag_days": 0,
-          "from_price": 30000.0,
-          "to_price": 30000.0
-        },
-        "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
-          "from_price": 29900.0,
-          "to_price": 30000.0
+          "to_price": 29500.0
         },
         "3개월": {
           "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "to": "26.11.09",
+          "target": "2026-08-10",
+          "baseline_lag_days": 3,
+          "from_price": 11000.0,
+          "to_price": 29500.0
+        }
+      },
+      "published_price_changes": {
+        "1주": -0.01666666666666672,
+        "1개월": -0.01666666666666672,
+        "3개월": 1.6818181818181817,
+        "6개월": null,
+        "1년": null,
+        "직전관측": -0.01666666666666672
+      },
+      "published_change_basis": {
+        "직전관측": {
+          "from": "26.11.06",
+          "to": "26.11.09",
+          "from_price": 30000.0,
+          "to_price": 29500.0
+        },
+        "1주": {
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
+          "baseline_lag_days": 0,
+          "from_price": 30000.0,
+          "to_price": 29500.0
+        },
+        "1개월": {
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
+          "from_price": 30000.0,
+          "to_price": 29500.0
+        },
+        "3개월": {
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 11000.0,
-          "to_price": 30000.0
+          "to_price": 29500.0
         }
       },
       "last_trade": {
-        "label": "26.10.08",
-        "period_start": "2026-10-08",
-        "period_end": "2026-10-08",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
-        "price": 30000.0,
-        "volume": 5000.0
+        "price": 29500.0,
+        "volume": 10000.0
       },
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": 30000.0,
         "low": 11000.0,
-        "pos": 1.0,
+        "pos": 0.9736842105263158,
         "basis": "confirmed_trades",
-        "end_label": "26.10.08",
+        "end_label": "26.11.09",
         "covers_full_year": false
       },
-      "flat_run": 21,
+      "flat_run": 1,
       "excluded": [],
       "weighted_audit": null,
-      "alerts": [
-        "거래량 0: 거래 없는 기준가격; 가격 변경을 실거래 상승·하락으로 해석 금지",
-        "마지막 거래 확인일 26.10.08; 최근 시장가격으로 간주 금지",
-        "거래 확인 기준 1개월 +20.0%"
-      ]
+      "alerts": []
     },
     {
       "key": "KOC23",
@@ -2321,12 +2325,12 @@
       "instrument": "KOC23-28",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2358,38 +2362,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 24050.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 15000.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2398,7 +2402,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2415,12 +2419,12 @@
       "instrument": "KOC24-29",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2452,31 +2456,31 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 26100.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 13500.0,
           "to_price": 30450.0
@@ -2490,7 +2494,7 @@
         "price": 26100.0,
         "volume": 16017.0
       },
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": 26100.0,
         "low": 26100.0,
@@ -2499,7 +2503,7 @@
         "end_label": "26.09.08",
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2517,12 +2521,12 @@
       "instrument": "KOC25-30",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2554,31 +2558,31 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 25100.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 13000.0,
           "to_price": 30450.0
@@ -2592,7 +2596,7 @@
         "price": 25100.0,
         "volume": 28983.0
       },
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": 25100.0,
         "low": 25100.0,
@@ -2601,7 +2605,7 @@
         "end_label": "26.09.08",
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2619,12 +2623,12 @@
       "instrument": "KOC26-31",
       "mode": "auto",
       "last": 30450.0,
-      "last_date": "2026-11-06",
-      "last_label": "26.11.06",
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.11.06",
-        "period_start": "2026-11-06",
-        "period_end": "2026-11-06",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
         "price": 30450.0,
         "volume": 0.0
@@ -2656,38 +2660,38 @@
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.11.05",
-          "to": "26.11.06",
+          "from": "26.11.06",
+          "to": "26.11.09",
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1주": {
-          "from": "26.10.30",
-          "to": "26.11.06",
-          "target": "2026-10-30",
+          "from": "26.11.02",
+          "to": "26.11.09",
+          "target": "2026-11-02",
           "baseline_lag_days": 0,
           "from_price": 30450.0,
           "to_price": 30450.0
         },
         "1개월": {
-          "from": "26.10.07",
-          "to": "26.11.06",
-          "target": "2026-10-07",
-          "baseline_lag_days": 0,
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
           "from_price": 21300.0,
           "to_price": 30450.0
         },
         "3개월": {
-          "from": "26.08.07",
-          "to": "26.11.06",
-          "target": "2026-08-07",
+          "from": "26.08.10",
+          "to": "26.11.09",
+          "target": "2026-08-10",
           "baseline_lag_days": 0,
           "from_price": 11000.0,
           "to_price": 30450.0
         }
       },
       "last_trade": null,
-      "n_points": 87,
+      "n_points": 88,
       "range_1y": {
         "high": null,
         "low": null,
@@ -2696,7 +2700,7 @@
         "end_label": null,
         "covers_full_year": false
       },
-      "flat_run": 20,
+      "flat_run": 21,
       "excluded": [],
       "weighted_audit": null,
       "alerts": [
@@ -2712,20 +2716,20 @@
       "vintage": false,
       "instrument": "KOC_TRD",
       "mode": "auto",
-      "last": 30000.0,
-      "last_date": "2026-10-08",
-      "last_label": "26.10.08",
+      "last": 29500.0,
+      "last_date": "2026-11-09",
+      "last_label": "26.11.09",
       "observation": {
-        "label": "26.10.08",
-        "period_start": "2026-10-08",
-        "period_end": "2026-10-08",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
-        "price": 30000.0,
-        "volume": 5000.0
+        "price": 29500.0,
+        "volume": 10000.0
       },
-      "volume": 5000.0,
+      "volume": 10000.0,
       "price_kind": "traded_close_weighted",
-      "last_krw": 30000.0,
+      "last_krw": 29500.0,
       "fx_asof": "2026-11-09 ECB 기준환율(Frankfurter)",
       "fx_basis": null,
       "source": "KOC 연물별 종가×거래량 가중평균 — 거래가 있었던 날만 점이 찍힘",
@@ -2733,83 +2737,99 @@
       "source_since": null,
       "changes": {
         "1주": null,
-        "1개월": 0.17850717187086707,
-        "3개월": null,
+        "1개월": -0.01666666666666672,
+        "3개월": 1.6818181818181817,
         "6개월": null,
         "1년": null,
-        "직전관측": 0.0033444816053511683
+        "직전관측": -0.01666666666666672
       },
       "change_basis": {
         "직전관측": {
-          "from": "26.10.07",
-          "to": "26.10.08",
-          "from_price": 29900.0,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1주": {
-          "from": "26.09.23",
-          "to": "26.10.08",
-          "target": "2026-10-01",
-          "baseline_lag_days": 8,
-          "from_price": 29600.0,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-11-02",
+          "baseline_lag_days": 25,
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1개월": {
-          "from": "26.09.08",
-          "to": "26.10.08",
-          "target": "2026-09-08",
-          "baseline_lag_days": 0,
-          "from_price": 25455.933333333334,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
+          "from_price": 30000.0,
+          "to_price": 29500.0
+        },
+        "3개월": {
+          "from": "26.08.07",
+          "to": "26.11.09",
+          "target": "2026-08-10",
+          "baseline_lag_days": 3,
+          "from_price": 11000.0,
+          "to_price": 29500.0
         }
       },
       "published_price_changes": {
         "1주": null,
-        "1개월": 0.17850717187086707,
-        "3개월": null,
+        "1개월": -0.01666666666666672,
+        "3개월": 1.6818181818181817,
         "6개월": null,
         "1년": null,
-        "직전관측": 0.0033444816053511683
+        "직전관측": -0.01666666666666672
       },
       "published_change_basis": {
         "직전관측": {
-          "from": "26.10.07",
-          "to": "26.10.08",
-          "from_price": 29900.0,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1주": {
-          "from": "26.09.23",
-          "to": "26.10.08",
-          "target": "2026-10-01",
-          "baseline_lag_days": 8,
-          "from_price": 29600.0,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-11-02",
+          "baseline_lag_days": 25,
+          "from_price": 30000.0,
+          "to_price": 29500.0
         },
         "1개월": {
-          "from": "26.09.08",
-          "to": "26.10.08",
-          "target": "2026-09-08",
-          "baseline_lag_days": 0,
-          "from_price": 25455.933333333334,
-          "to_price": 30000.0
+          "from": "26.10.08",
+          "to": "26.11.09",
+          "target": "2026-10-10",
+          "baseline_lag_days": 2,
+          "from_price": 30000.0,
+          "to_price": 29500.0
+        },
+        "3개월": {
+          "from": "26.08.07",
+          "to": "26.11.09",
+          "target": "2026-08-10",
+          "baseline_lag_days": 3,
+          "from_price": 11000.0,
+          "to_price": 29500.0
         }
       },
       "last_trade": {
-        "label": "26.10.08",
-        "period_start": "2026-10-08",
-        "period_end": "2026-10-08",
+        "label": "26.11.09",
+        "period_start": "2026-11-09",
+        "period_end": "2026-11-09",
         "precision": "day",
-        "price": 30000.0,
-        "volume": 5000.0
+        "price": 29500.0,
+        "volume": 10000.0
       },
-      "n_points": 16,
+      "n_points": 17,
       "range_1y": {
         "high": 30000.0,
         "low": 11000.0,
-        "pos": 1.0,
+        "pos": 0.9736842105263158,
         "basis": "confirmed_trades",
-        "end_label": "26.10.08",
+        "end_label": "26.11.09",
         "covers_full_year": false
       },
       "flat_run": 1,
@@ -2999,6 +3019,18 @@
             ],
             "price": 30000.0
           },
+          "26.11.09": {
+            "numerator": 295000000.0,
+            "volume": 10000.0,
+            "members": [
+              {
+                "key": "KOC22",
+                "close": 29500.0,
+                "volume": 10000.0
+              }
+            ],
+            "price": 29500.0
+          },
           "26.09.08": {
             "numerator": 1145517000.0,
             "volume": 45000.0,
@@ -3018,11 +3050,7 @@
           }
         }
       },
-      "alerts": [
-        "마지막 거래 확인일 26.10.08; 최근 시장가격으로 간주 금지",
-        "관측 지연 33일 (월값은 월말 기준 최소 경과일)",
-        "거래 확인 기준 1개월 +17.9%"
-      ]
+      "alerts": []
     },
     {
       "key": "RGGI",
@@ -3219,22 +3247,22 @@
   "derived": [
     {
       "name": "KOC_TRD / KAU26",
-      "value": null,
-      "latest_quote_ratio": 1.0135135135135136,
-      "comparable": false,
-      "basis": "KOC_TRD 26.10.08 / KAU26 26.11.06",
+      "value": 1.0,
+      "latest_quote_ratio": 1.0,
+      "comparable": true,
+      "basis": "KOC_TRD 26.11.09 / KAU26 26.11.09",
       "last_common_trade": {
-        "label": "26.10.08",
-        "value": 0.9852216748768473
+        "label": "26.11.09",
+        "value": 1.0
       },
-      "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
+      "note": "동일 관측일·거래 확인"
     },
     {
       "name": "IKOC_TRD / KAU26",
       "value": null,
-      "latest_quote_ratio": 1.0641891891891893,
+      "latest_quote_ratio": 1.0677966101694916,
       "comparable": false,
-      "basis": "IKOC_TRD 26.08.24 / KAU26 26.11.06",
+      "basis": "IKOC_TRD 26.08.24 / KAU26 26.11.09",
       "last_common_trade": {
         "label": "26.08.21",
         "value": 1.0661016949152542
@@ -3244,27 +3272,27 @@
     {
       "name": "KOC / KAU26",
       "value": null,
-      "latest_quote_ratio": 0.9527027027027027,
+      "latest_quote_ratio": 0.9559322033898305,
       "comparable": false,
-      "basis": "KOC 26.11.06 / KAU26 26.11.06",
+      "basis": "KOC 26.11.09 / KAU26 26.11.09",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "KCU26 / KAU26",
       "value": null,
-      "latest_quote_ratio": 1.0287162162162162,
+      "latest_quote_ratio": 1.0322033898305085,
       "comparable": false,
-      "basis": "KCU26 26.11.06 / KAU26 26.11.06",
+      "basis": "KCU26 26.11.09 / KAU26 26.11.09",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "KAU26 / KAU25",
       "value": null,
-      "latest_quote_ratio": 1.0050933786078098,
+      "latest_quote_ratio": 1.0016977928692699,
       "comparable": false,
-      "basis": "KAU26 26.11.06 / KAU25 26.09.02",
+      "basis": "KAU26 26.11.09 / KAU25 26.09.02",
       "last_common_trade": {
         "label": "26.08.31",
         "value": 0.9813242784380306
@@ -3274,30 +3302,30 @@
     {
       "name": "KAU26 / EU_ETS",
       "value": null,
-      "latest_quote_ratio": 0.2343036168008675,
+      "latest_quote_ratio": 0.2335120505278916,
       "comparable": false,
-      "basis": "KAU26 26.11.06 / EU_ETS 26.08",
+      "basis": "KAU26 26.11.09 / EU_ETS 26.08",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "CORSIA / KAU26",
       "value": null,
-      "latest_quote_ratio": 0.5642837837837837,
+      "latest_quote_ratio": 0.5661966101694915,
       "comparable": false,
-      "basis": "CORSIA 26.08 / KAU26 26.11.06",
+      "basis": "CORSIA 26.08 / KAU26 26.11.09",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     },
     {
       "name": "VCM / KAU26",
       "value": null,
-      "latest_quote_ratio": 0.6826013513513514,
+      "latest_quote_ratio": 0.6849152542372882,
       "comparable": false,
-      "basis": "VCM 26.06 / KAU26 26.11.06",
+      "basis": "VCM 26.06 / KAU26 26.11.09",
       "last_common_trade": null,
       "note": "참고값: 관측일·거래 여부·상품·환율 기준 차이; 현재 스프레드 해석 금지"
     }
   ],
-  "source_sha256": "01ef70a0941daa3ee6ec674d84eeb9ec6de325bd07ab03991fb701009da59537"
+  "source_sha256": "e1ae6b94604e2d06d5939108a83d1ce0e88b1ca9c73daca2c087d161d1c1b78f"
 }
